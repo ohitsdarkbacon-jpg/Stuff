@@ -11,42 +11,31 @@
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 
-  <!-- PayPal SDK - your Client ID is already here -->
+  <!-- PayPal SDK -->
   <script src="https://www.paypal.com/sdk/js?client-id=AZFXwnf32b8gYaBWN0GEcAl_qKRPewK223MTCzOlh1SWyJ3LBFYJnNAbvQKYvh0Pfx0e1l-1y-LaySWs&currency=EUR&components=buttons"></script>
 
   <style>
     body { font-family: 'Inter', system-ui, sans-serif; }
     .neon-text { text-shadow: 0 0 20px #22c55e, 0 0 40px #22c55e; }
-    .slot-bar { transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
-    #particles-canvas {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      z-index: 0;
-      pointer-events: none;
-    }
-    nav, section, #landing-page { position: relative; z-index: 10; }
     .glow-card {
       background: rgba(24, 24, 27, 0.7);
       backdrop-filter: blur(12px);
       border: 1px solid rgba(34, 197, 94, 0.15);
       transition: all 0.3s ease;
+      overflow: hidden; /* Prevents PayPal buttons from leaking */
     }
     .glow-card:hover {
       border-color: rgba(34, 197, 94, 0.4);
       box-shadow: 0 0 30px rgba(34, 197, 94, 0.08);
       transform: translateY(-2px);
     }
-    @keyframes discordPulse {
-      0%, 100% { box-shadow: 0 0 40px rgba(88, 101, 242, 0.3); }
-      50% { box-shadow: 0 0 80px rgba(88, 101, 242, 0.6), 0 0 120px rgba(88, 101, 242, 0.2); }
+    .paypal-container {
+      min-height: 140px; /* Ensures space for PayPal button */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
     }
-    .discord-pulse { animation: discordPulse 2.5s ease-in-out infinite; }
-    @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-12px); }
-    }
-    .float-anim { animation: float 3s ease-in-out infinite; }
     .radial-glow {
       background: radial-gradient(ellipse at center, rgba(88, 101, 242, 0.12) 0%, transparent 60%);
     }
@@ -62,6 +51,16 @@
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
+    @keyframes discordPulse {
+      0%, 100% { box-shadow: 0 0 40px rgba(88, 101, 242, 0.3); }
+      50% { box-shadow: 0 0 80px rgba(88, 101, 242, 0.6), 0 0 120px rgba(88, 101, 242, 0.2); }
+    }
+    .discord-pulse { animation: discordPulse 2.5s ease-in-out infinite; }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+    .float-anim { animation: float 3s ease-in-out infinite; }
   </style>
 </head>
 <body class="bg-zinc-950 text-white overflow-x-hidden grid-pattern">
@@ -76,16 +75,14 @@
         <div class="w-9 h-9 bg-emerald-500 rounded-xl flex items-center justify-center text-2xl font-bold shadow-lg shadow-emerald-500/20">T</div>
         <h1 class="text-2xl font-bold tracking-tighter neon-text">TRULY'S AUTOJOINER</h1>
       </div>
-      <div id="nav-right">
-        <button onclick="discordLogin()" id="nav-login-btn"
-                class="flex items-center gap-2 bg-[#5865F2] hover:bg-[#4752C4] px-6 py-2 rounded-2xl font-semibold transition shadow-lg shadow-[#5865F2]/20">
-          <i class="fab fa-discord"></i> Login with Discord
-        </button>
-      </div>
+      <button onclick="discordLogin()" id="nav-login-btn"
+              class="flex items-center gap-2 bg-[#5865F2] hover:bg-[#4752C4] px-6 py-2 rounded-2xl font-semibold transition shadow-lg shadow-[#5865F2]/20">
+        <i class="fab fa-discord"></i> Login with Discord
+      </button>
     </div>
   </nav>
 
-  <!-- LANDING PAGE (shown when NOT logged in) -->
+  <!-- LANDING PAGE -->
   <section id="landing-page" class="pt-24 min-h-screen flex flex-col items-center justify-center radial-glow">
     <div class="max-w-3xl mx-auto px-6 text-center">
       <div class="float-anim mb-8">
@@ -99,13 +96,13 @@
     </div>
   </section>
 
-  <!-- DASHBOARD (shows after login) -->
+  <!-- DASHBOARD -->
   <section id="dashboard" class="py-20 hidden">
     <div class="max-w-5xl mx-auto px-6">
       <h3 class="text-4xl font-bold mb-2">Welcome to your Dashboard</h3>
       <p id="discord-name" class="text-emerald-400 text-xl mb-8">@your-discord-username</p>
 
-      <!-- Stats Grid -->
+      <!-- Stats -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
         <div class="glow-card p-6 rounded-xl text-center">
           <h4 class="text-lg font-semibold text-zinc-400 mb-2">Credits</h4>
@@ -124,29 +121,48 @@
         </div>
       </div>
 
-      <!-- Buy Credits Section with PayPal -->
+      <!-- BUY CREDITS SECTION – PayPal buttons are now fully inside cards -->
       <div class="glow-card p-8 rounded-xl mb-12">
-        <h4 class="text-3xl font-bold mb-6 text-center">Buy Credits (1€ = 1 Credit)</h4>
-        <p class="text-center text-zinc-400 mb-8">2 Credits = 1 Hour of Autojoiner Service</p>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="price-cards">
-          <!-- PayPal buttons will be inserted here automatically -->
+        <h4 class="text-3xl font-bold mb-6 text-center">Buy Credits</h4>
+        <p class="text-center text-zinc-400 mb-8">1€ = 1 Credit • 2 Credits = 1 Hour</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- Each PayPal package gets its own contained card -->
+          <div class="glow-card p-6 rounded-xl text-center overflow-hidden">
+            <div class="text-2xl font-bold mb-2">5 Credits</div>
+            <div class="text-4xl font-bold text-emerald-400 mb-4">5€</div>
+            <div id="paypal-5" class="paypal-container"></div>
+          </div>
+          <div class="glow-card p-6 rounded-xl text-center overflow-hidden">
+            <div class="text-2xl font-bold mb-2">10 Credits</div>
+            <div class="text-4xl font-bold text-emerald-400 mb-4">10€</div>
+            <div id="paypal-10" class="paypal-container"></div>
+          </div>
+          <div class="glow-card p-6 rounded-xl text-center overflow-hidden">
+            <div class="text-2xl font-bold mb-2">25 Credits</div>
+            <div class="text-4xl font-bold text-emerald-400 mb-4">25€</div>
+            <div id="paypal-25" class="paypal-container"></div>
+          </div>
+          <div class="glow-card p-6 rounded-xl text-center overflow-hidden">
+            <div class="text-2xl font-bold mb-2">50 Credits</div>
+            <div class="text-4xl font-bold text-emerald-400 mb-4">50€</div>
+            <div id="paypal-50" class="paypal-container"></div>
+          </div>
         </div>
       </div>
 
-      <!-- Your Assigned Key -->
+      <!-- Your Key -->
       <div class="glow-card p-8 rounded-xl mb-12">
         <h4 class="text-3xl font-bold mb-4">Your Key</h4>
         <p id="user-key" class="text-lg text-zinc-300 mb-6">No key assigned yet. Buy credits to receive one!</p>
-        <button onclick="fetchUserKey()" class="bg-emerald-500 hover:bg-emerald-600 px-8 py-4 rounded-xl font-semibold text-lg transition shadow-lg shadow-emerald-500/30 hidden" id="refresh-key-btn">
+        <button onclick="fetchUserKey()" class="bg-emerald-500 hover:bg-emerald-600 px-8 py-4 rounded-xl font-semibold text-lg transition shadow-lg shadow-emerald-500/30 hidden w-full" id="refresh-key-btn">
           Refresh / Check Key
         </button>
       </div>
 
-      <!-- Admin Panel (only visible to admin) -->
+      <!-- Admin Panel -->
       <div id="admin-panel" class="glow-card p-8 rounded-xl hidden">
         <h4 class="text-3xl font-bold mb-6"><span class="admin-badge">Admin Panel</span></h4>
 
-        <!-- Upload Keys -->
         <div class="mb-10">
           <h5 class="text-2xl font-semibold text-amber-400 mb-4">Upload New Keys</h5>
           <textarea id="admin-key-input" class="bg-zinc-900 border border-zinc-700 p-4 rounded-xl w-full h-40 focus:outline-none focus:border-amber-500 transition text-white" placeholder="Paste one key per line..."></textarea>
@@ -155,7 +171,6 @@
           </button>
         </div>
 
-        <!-- Assign Credits -->
         <div>
           <h5 class="text-2xl font-semibold text-amber-400 mb-4">Manually Assign Credits</h5>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -192,109 +207,84 @@ let currentUser = null;
 let currentToken = null;
 let currentUserId = null;
 
-// Load saved data
+// Load / Save data
 function loadUserData() {
   const saved = localStorage.getItem('trulysAutojoiner');
   if (saved) Object.assign(user, JSON.parse(saved));
 }
-
-// Save data
 function saveUserData() {
   localStorage.setItem('trulysAutojoiner', JSON.stringify(user));
 }
 
-// Render PayPal buttons
+// Render PayPal buttons (now properly contained)
 function renderPricing() {
   const packages = [
-    {credits:5, price:"5.00"}, {credits:10, price:"10.00"},
-    {credits:25, price:"25.00"}, {credits:50, price:"50.00"}
+    { id: 'paypal-5', credits: 5, price: "5.00" },
+    { id: 'paypal-10', credits: 10, price: "10.00" },
+    { id: 'paypal-25', credits: 25, price: "25.00" },
+    { id: 'paypal-50', credits: 50, price: "50.00" }
   ];
 
-  let html = '';
   packages.forEach(pkg => {
-    const id = `paypal-${pkg.credits}`;
-    html += `
-      <div class="glow-card p-6 rounded-xl text-center">
-        <div class="text-2xl font-bold mb-2">${pkg.credits} Credits</div>
-        <div class="text-4xl font-bold text-emerald-400 mb-4">${pkg.price}€</div>
-        <div id="${id}" class="mt-4"></div>
-      </div>
-    `;
-  });
+    const container = document.getElementById(pkg.id);
+    if (!container) return;
 
-  const container = document.getElementById('price-cards');
-  if (container) container.innerHTML = html;
-
-  setTimeout(() => {
-    packages.forEach(pkg => {
-      const id = `paypal-${pkg.credits}`;
-      const el = document.getElementById(id);
-      if (el) {
-        paypal.Buttons({
-          style: { shape: 'rect', color: 'gold', layout: 'vertical' },
-          createOrder: (data, actions) => actions.order.create({
-            purchase_units: [{ amount: { value: pkg.price } }]
-          }),
-          onApprove: async (data, actions) => {
-            await actions.order.capture();
-            user.credits += pkg.credits;
-            saveUserData();
-            await assignKeyAfterPurchase(pkg.credits);
-            renderDashboard();
-            alert(`Success! ${pkg.credits} credits added. Check your key below.`);
-          },
-          onError: (err) => {
-            console.error(err);
-            alert("Payment failed. Please try again.");
-          }
-        }).render(`#${id}`);
+    paypal.Buttons({
+      style: { shape: 'rect', color: 'gold', layout: 'vertical' },
+      createOrder: (data, actions) => actions.order.create({
+        purchase_units: [{ amount: { value: pkg.price } }]
+      }),
+      onApprove: async (data, actions) => {
+        await actions.order.capture();
+        user.credits += pkg.credits;
+        saveUserData();
+        await assignKeyAfterPurchase(pkg.credits);
+        renderDashboard();
+        alert(`Success! ${pkg.credits} credits added. Check your key below.`);
+      },
+      onError: (err) => {
+        console.error(err);
+        alert("Payment failed. Please try again.");
       }
-    });
-  }, 1000); // Give PayPal SDK time to load
+    }).render(`#${pkg.id}`);
+  });
 }
 
 // Assign key after purchase
 async function assignKeyAfterPurchase(creditsPurchased) {
   if (!currentUserId) return;
   try {
-    const response = await fetch('/api/manage-keys', {
+    const res = await fetch('/api/manage-keys', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'assign', discordId: currentUserId, creditsPurchased })
     });
-    const result = await response.json();
-    const keyEl = document.getElementById('user-key');
+    const data = await res.json();
+    const el = document.getElementById('user-key');
     const btn = document.getElementById('refresh-key-btn');
-    if (result.key) {
-      keyEl.textContent = result.key;
+    if (data.key) {
+      el.textContent = data.key;
       btn.classList.remove('hidden');
     } else {
-      keyEl.textContent = result.error || 'No keys available. Contact admin.';
+      el.textContent = data.error || 'No keys available.';
     }
   } catch (err) {
-    console.error(err);
     document.getElementById('user-key').textContent = 'Error fetching key.';
   }
 }
 
-// Fetch user's key
+// Fetch key
 async function fetchUserKey() {
   if (!currentUserId) return;
   try {
-    const response = await fetch('/api/manage-keys', {
+    const res = await fetch('/api/manage-keys', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'get', discordId: currentUserId })
     });
-    const result = await response.json();
-    const keyEl = document.getElementById('user-key');
-    const btn = document.getElementById('refresh-key-btn');
-    if (result.key) {
-      keyEl.textContent = result.key;
-      btn.classList.remove('hidden');
-    } else {
-      keyEl.textContent = 'No key assigned yet.';
-    }
+    const data = await res.json();
+    document.getElementById('user-key').textContent = data.key || 'No key assigned yet.';
+    if (data.key) document.getElementById('refresh-key-btn').classList.remove('hidden');
   } catch (err) {
     document.getElementById('user-key').textContent = 'Error fetching key.';
   }
@@ -308,7 +298,7 @@ async function adminUploadKeys() {
   if (!text) return alert("Enter at least one key");
 
   const keys = text.split('\n').map(k => k.trim()).filter(Boolean);
-  let successCount = 0;
+  let success = 0;
 
   for (const keyValue of keys) {
     try {
@@ -317,13 +307,12 @@ async function adminUploadKeys() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'upload', discordId: currentUserId, keyValue })
       });
-      const data = await res.json();
-      if (!data.error) successCount++;
-    } catch (e) {}
+      if ((await res.json()).message) success++;
+    } catch {}
   }
 
   input.value = '';
-  alert(`Uploaded ${successCount} key(s) successfully.`);
+  alert(`Successfully uploaded ${success} key(s).`);
 }
 
 // Discord login
@@ -366,7 +355,7 @@ function handleCallback() {
   }
 }
 
-// Show admin panel only to admin
+// Show admin panel
 function showAdminPanelIfAllowed() {
   const panel = document.getElementById("admin-panel");
   if (panel && currentUserId === ADMIN_ID) panel.classList.remove("hidden");
