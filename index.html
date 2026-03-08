@@ -11,7 +11,7 @@
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   
-  <!-- PayPal SDK - still here if you keep it, but role is now bot-managed -->
+  <!-- PayPal SDK -->
   <script src="https://www.paypal.com/sdk/js?client-id=AZFXwnf32b8gYaBWN0GEcAl_qKRPewK223MTCzOlh1SWyJ3LBFYJnNAbvQKYvh0Pfx0e1l-1y-LaySWs&currency=EUR&components=buttons"></script>
   
   <style>
@@ -20,6 +20,7 @@
     .slot-bar { transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
     #slots-grid > div { transition: all 0.3s ease; }
     #slots-grid > div:hover { transform: translateY(-2px); }
+
     #particles-canvas {
       position: fixed;
       top: 0; left: 0;
@@ -27,7 +28,9 @@
       z-index: 0;
       pointer-events: none;
     }
+
     nav, section, #landing-page { position: relative; z-index: 10; }
+
     .glow-card {
       background: rgba(24, 24, 27, 0.7);
       backdrop-filter: blur(12px);
@@ -39,25 +42,30 @@
       box-shadow: 0 0 30px rgba(34, 197, 94, 0.08);
       transform: translateY(-2px);
     }
+
     @keyframes discordPulse {
       0%, 100% { box-shadow: 0 0 40px rgba(88, 101, 242, 0.3); }
       50% { box-shadow: 0 0 80px rgba(88, 101, 242, 0.6), 0 0 120px rgba(88, 101, 242, 0.2); }
     }
     .discord-pulse { animation: discordPulse 2.5s ease-in-out infinite; }
+
     @keyframes float {
       0%, 100% { transform: translateY(0px); }
       50% { transform: translateY(-12px); }
     }
     .float-anim { animation: float 3s ease-in-out infinite; }
+
     .radial-glow {
       background: radial-gradient(ellipse at center, rgba(88, 101, 242, 0.12) 0%, transparent 60%);
     }
+
     .grid-pattern {
       background-image:
         linear-gradient(rgba(34, 197, 94, 0.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(34, 197, 94, 0.03) 1px, transparent 1px);
       background-size: 60px 60px;
     }
+
     .admin-badge {
       background: linear-gradient(135deg, #f59e0b, #ef4444);
       -webkit-background-clip: text;
@@ -179,25 +187,58 @@
           <button onclick="unlockChannel()" id="unlock-btn" class="mt-4 bg-[#5865F2] hover:bg-[#4752C4] px-6 py-3 rounded-lg w-full font-semibold transition shadow-lg shadow-[#5865F2]/20" disabled>Unlock Discord Channel</button>
         </div>
       </div>
+
+      <!-- ╔════════════════════════════════════╗
+           ║          PRIVATE SCRIPT            ║
+           ╚════════════════════════════════════╝ -->
+      <div class="mt-12 glow-card p-8 rounded-xl">
+        <h4 class="text-2xl font-bold mb-4 neon-text">Private Script</h4>
+        <p class="text-zinc-400 mb-6">This section is only visible to users with active hours (slot access).</p>
+
+        <button onclick="toggleScript()" class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg font-semibold transition shadow-lg shadow-purple-500/30 mb-6">
+          <i class="fas fa-eye mr-2"></i> View Script
+        </button>
+
+        <div id="script-content" class="hidden bg-zinc-900/70 border border-purple-500/30 p-6 rounded-lg text-zinc-200 leading-relaxed">
+          <!-- ╔══════════════════════════════════════════════╗
+               ║          CUSTOMIZE THE TEXT BELOW            ║
+               ╚══════════════════════════════════════════════╝ -->
+
+          <p class="mb-4 font-semibold text-emerald-400">Welcome to the private script area!</p>
+          
+          <p class="mb-3">This is your exclusive content. Only users who bought credits and converted them to hours can see this.</p>
+          
+          <ul class="list-disc pl-6 mb-4 space-y-2">
+            <li>Secret tip #1: Use code <code class="bg-zinc-800 px-1 rounded">ROBLOX2026</code> for extra speed</li>
+            <li>Secret tip #2: Join at exactly 3:33 AM server time for best results</li>
+            <li>Secret tip #3: Avoid using VPNs from certain countries</li>
+          </ul>
+
+          <p class="italic text-zinc-400 mt-6 border-t border-zinc-700 pt-4">
+            This text is fully customizable — edit anything inside this div in the HTML.
+            You can add images, code blocks, links, lists — whatever you want.
+          </p>
+
+          <!-- End of customizable content -->
+        </div>
+      </div>
+
     </div>
   </section>
 
 <script>
-// === CONFIG - CHANGE THESE ===
-// Your bot's public API URL (e.g. https://your-bot.onrender.com or http://localhost:3000)
-const BOT_API_URL = "https://discord.com/oauth2/authorize?client_id=1477548522713911448&permissions=0&response_type=code&redirect_uri=https%3A%2F%2Fstuff-2eft.onrender.com%2F&integration_type=0&scope=identify+connections+guilds.members.read+bot+rpc.voice.read+rpc.video.write+rpc.activities.write+applications.builds.upload+applications.store.update+activities.write+relationships.write+role_connections.write+openid+gateway.connect+sdk.social_layer_presence+application_identities.write+applications.commands.permissions.update+identify.premium+guilds+guilds.channels.read+rpc+rpc.voice.write+rpc.screenshare.read+webhook.incoming+applications.builds.read+activities.invites.write+voice+presences.read+dm_channels.messages.read+account.global_name.update+sdk.social_layer+email+guilds.join+gdm.join+presences.write+dm_channels.read+payment_sources.country_code+lobbies.write+dm_channels.messages.write";
-
-// The secret you set in the bot's .env file (keep it secret!)
-const API_SECRET = "XkKDs6JFkTT1XGiFYYLiW67H-4yB_iaK";
-
-// Your existing constants
+// === CHANGE THESE THREE VALUES ===
+// 1. Discord Client ID
 const CLIENT_ID = "1477548522713911448";
+// 2. Discord server invite
 const DISCORD_INVITE = "https://discord.gg/NkVYAgtp";
+// 3. Admin IDs
 const ADMIN_IDS = ["1049068212182073344"];
+// =================================
+
 const REDIRECT_URI = window.location.origin + window.location.pathname;
 const MAX_SLOTS = 6;
 
-// User data
 let user = { credits: 0, hours: 0, roblox: "", slotClaimed: false };
 let currentUser = null;
 let currentToken = null;
@@ -207,7 +248,10 @@ function initParticles() {
   const canvas = document.getElementById('particles-canvas');
   const ctx = canvas.getContext('2d');
   let particles = [];
-  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
   resize();
   window.addEventListener('resize', resize);
 
@@ -225,16 +269,23 @@ function initParticles() {
       this.pulseOffset = Math.random() * Math.PI * 2;
     }
     update(time) {
-      this.x += this.vx; this.y += this.vy;
+      this.x += this.vx;
+      this.y += this.vy;
       if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
       if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
       this.currentOpacity = this.opacity * (0.5 + 0.5 * Math.sin(time * this.pulseSpeed + this.pulseOffset));
     }
     draw() {
-      ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-      ctx.fillStyle = this.color; ctx.globalAlpha = this.currentOpacity; ctx.fill();
-      ctx.beginPath(); ctx.arc(this.x, this.y, this.radius * 3, 0, Math.PI * 2);
-      ctx.fillStyle = this.color; ctx.globalAlpha = this.currentOpacity * 0.15; ctx.fill();
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fillStyle = this.color;
+      ctx.globalAlpha = this.currentOpacity;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius * 3, 0, Math.PI * 2);
+      ctx.fillStyle = this.color;
+      ctx.globalAlpha = this.currentOpacity * 0.15;
+      ctx.fill();
       ctx.globalAlpha = 1;
     }
   }
@@ -258,7 +309,8 @@ function initParticles() {
           ctx.lineTo(particles[j].x, particles[j].y);
           ctx.strokeStyle = '#22c55e';
           ctx.globalAlpha = 0.04 * (1 - dist / 120);
-          ctx.stroke(); ctx.globalAlpha = 1;
+          ctx.stroke();
+          ctx.globalAlpha = 1;
         }
       }
     }
@@ -268,7 +320,9 @@ function initParticles() {
 }
 
 // ======== ADMIN SYSTEM ========
-function isAdmin() { return currentUser && ADMIN_IDS.includes(currentUser.id); }
+function isAdmin() {
+  return currentUser && ADMIN_IDS.includes(currentUser.id);
+}
 
 function showAdminPanel() {
   document.getElementById('admin-panel').classList.toggle('hidden', !isAdmin());
@@ -296,17 +350,19 @@ function adminAssignCredits() {
   alert(`Assigned ${amount} credits to ${targetId}`);
 }
 
-// ======== LOGIN / LOGOUT UI ========
+// ======== LOGIN STATE ========
 function showLoggedInState() {
   document.getElementById('landing-page').classList.add('hidden');
   document.getElementById('hero-section').classList.remove('hidden');
   document.getElementById('dashboard').classList.remove('hidden');
+
   document.getElementById('nav-right').innerHTML = `
     <div class="flex items-center gap-3">
       <span class="text-zinc-400 text-sm">Logged in as</span>
       <span class="text-emerald-400 font-semibold">@${currentUser.username}</span>
       ${isAdmin() ? '<span class="text-xs bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full font-semibold">ADMIN</span>' : ''}
-    </div>`;
+    </div>
+  `;
 }
 
 function showLoggedOutState() {
@@ -357,11 +413,11 @@ function renderSlots() {
 function claimSlot(slotId) {
   if (!currentUser) return alert('Login first!');
   if (user.hours <= 0) return alert('Need at least 1 hour!');
-  if (user.slotClaimed) return alert('You already claimed a slot!');
+  if (user.slotClaimed) return alert('Already claimed a slot!');
 
   const slots = loadSlots();
   const slot = slots.find(s => s.id === slotId);
-  if (!slot || slot.taken) return alert('Slot taken or invalid');
+  if (!slot || slot.taken) return alert('Slot unavailable');
 
   slot.taken = true;
   slot.user = currentUser.username;
@@ -385,41 +441,7 @@ function releaseSlot(slotId) {
   saveUserData();
   renderSlots();
   renderDashboard();
-
-  // Notify bot: revoke slot access
-  notifyBotAboutSlot(false, 0);
   alert(`Slot ${slotId} released.`);
-}
-
-// ======== NOTIFY DISCORD BOT ABOUT SLOT STATUS ========
-async function notifyBotAboutSlot(hasSlot, hours = 0) {
-  if (!currentUser?.id) {
-    console.warn("No Discord user ID available - cannot notify bot");
-    return;
-  }
-
-  try {
-    const response = await fetch(BOT_API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        secret: API_SECRET,
-        userId: currentUser.id,
-        hasSlot: hasSlot,
-        hours: hasSlot ? hours : 0
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log("Bot notified successfully:", data);
-  } catch (err) {
-    console.error("Failed to notify bot about slot status:", err);
-    // Optional: alert user or retry later
-  }
 }
 
 // ======== PAYPAL BUTTONS ========
@@ -451,7 +473,7 @@ function renderPricing() {
           renderDashboard();
           alert(`Success! +${pkg.credits} credits`);
         },
-        onError: () => alert("Payment error - try again")
+        onError: () => alert("Payment error")
       }).render(`#paypal-${pkg.credits}`);
     });
   }, 800);
@@ -489,11 +511,11 @@ function handleCallback() {
       showAdminPanel();
       renderDashboard();
       window.history.replaceState({}, "", window.location.pathname);
-    }).catch(() => alert("Failed to fetch Discord user info"));
+    }).catch(() => alert("Failed to fetch user info"));
   }
 }
 
-// ======== DASHBOARD ========
+// ======== DASHBOARD RENDER ========
 function renderDashboard() {
   document.getElementById("credits").textContent = user.credits;
   document.getElementById("hours").textContent = user.hours;
@@ -511,27 +533,41 @@ function saveRobloxUser() {
 function convertCredits() {
   let amount = parseInt(document.getElementById("convert-amount").value) || 0;
   if (amount % 2 !== 0 || amount > user.credits || amount <= 0) {
-    return alert("Must be even, at least 2, and within your credits!");
+    return alert("Must be even number ≥2 and ≤ your credits!");
   }
-
   user.credits -= amount;
   user.hours += amount / 2;
   saveUserData();
   renderDashboard();
-  alert(`Converted! You now have ${user.hours} hours.`);
-
-  // Notify bot: user now has access (hours > 0)
-  if (user.hours > 0) {
-    notifyBotAboutSlot(true, user.hours);
-  }
+  alert(`Converted! Now ${user.hours} hours.`);
 }
 
 function unlockChannel() {
   if (user.hours > 0) {
     window.open(DISCORD_INVITE, "_blank");
   } else {
-    alert("You need at least 1 hour!");
+    alert("Need at least 1 hour!");
   }
+}
+
+// ======== PRIVATE SCRIPT TOGGLE ========
+function toggleScript() {
+  if (user.hours <= 0) {
+    alert("You need an active slot (hours > 0) to view the private script!");
+    return;
+  }
+
+  const content = document.getElementById("script-content");
+  content.classList.toggle("hidden");
+
+  // Optional: change button text when open
+  const btn = event.target;
+  btn.textContent = content.classList.contains("hidden") 
+    ? "View Script" 
+    : "Hide Script";
+  btn.innerHTML = content.classList.contains("hidden") 
+    ? '<i class="fas fa-eye mr-2"></i> View Script' 
+    : '<i class="fas fa-eye-slash mr-2"></i> Hide Script';
 }
 
 // ======== STARTUP ========
