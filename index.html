@@ -8,21 +8,24 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Font Awesome for icons -->
+  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 
   <!-- PayPal SDK -->
   <script src="https://www.paypal.com/sdk/js?client-id=AZFXwnf32b8gYaBWN0GEcAl_qKRPewK223MTCzOlh1SWyJ3LBFYJnNAbvQKYvh0Pfx0e1l-1y-LaySWs&currency=EUR&components=buttons"></script>
 
   <style>
-    body { font-family: 'Inter', system-ui, sans-serif; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      padding-top: 90px; /* Space for fixed navbar */
+    }
     .neon-text { text-shadow: 0 0 20px #22c55e, 0 0 40px #22c55e; }
     .glow-card {
       background: rgba(24, 24, 27, 0.7);
       backdrop-filter: blur(12px);
       border: 1px solid rgba(34, 197, 94, 0.15);
       transition: all 0.3s ease;
-      overflow: hidden; /* Prevents PayPal buttons from leaking */
+      overflow: hidden;
     }
     .glow-card:hover {
       border-color: rgba(34, 197, 94, 0.4);
@@ -30,7 +33,7 @@
       transform: translateY(-2px);
     }
     .paypal-container {
-      min-height: 140px; /* Ensures space for PayPal button */
+      min-height: 140px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -68,8 +71,8 @@
   <!-- PARTICLE BACKGROUND -->
   <canvas id="particles-canvas"></canvas>
 
-  <!-- NAVBAR -->
-  <nav class="bg-black/80 backdrop-blur-md border-b border-zinc-800/50 fixed w-full z-50">
+  <!-- NAVBAR – fixed and not cut off -->
+  <nav class="bg-black/80 backdrop-blur-md border-b border-zinc-800/50 fixed top-0 left-0 right-0 z-50 shadow-xl">
     <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div class="w-9 h-9 bg-emerald-500 rounded-xl flex items-center justify-center text-2xl font-bold shadow-lg shadow-emerald-500/20">T</div>
@@ -83,7 +86,7 @@
   </nav>
 
   <!-- LANDING PAGE -->
-  <section id="landing-page" class="pt-24 min-h-screen flex flex-col items-center justify-center radial-glow">
+  <section id="landing-page" class="min-h-screen flex flex-col items-center justify-center radial-glow">
     <div class="max-w-3xl mx-auto px-6 text-center">
       <div class="float-anim mb-8">
         <button onclick="discordLogin()" class="discord-pulse rounded-full bg-[#5865F2] w-40 h-40 flex items-center justify-center mx-auto cursor-pointer hover:scale-105 transition-transform duration-300">
@@ -91,71 +94,62 @@
         </button>
       </div>
       <h2 class="text-6xl font-bold tracking-tighter neon-text mb-4">Roblox Autojoiner</h2>
-      <p class="text-xl text-zinc-400 mb-2">Buy credits → Convert to hours → Unlock private channel</p>
-      <p class="text-zinc-500 mt-6">Click the Discord icon above to get started</p>
+      <p class="text-xl text-zinc-400 mb-2">Buy keys directly → Instant delivery</p>
+      <p class="text-zinc-500 mt-6">Login with Discord to get started</p>
     </div>
   </section>
 
   <!-- DASHBOARD -->
   <section id="dashboard" class="py-20 hidden">
     <div class="max-w-5xl mx-auto px-6">
-      <h3 class="text-4xl font-bold mb-2">Welcome to your Dashboard</h3>
-      <p id="discord-name" class="text-emerald-400 text-xl mb-8">@your-discord-username</p>
+      <h3 class="text-4xl font-bold mb-2">Welcome back</h3>
+      <p id="discord-name" class="text-emerald-400 text-xl mb-10">@your-discord-username</p>
 
-      <!-- Stats -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <div class="glow-card p-6 rounded-xl text-center">
-          <h4 class="text-lg font-semibold text-zinc-400 mb-2">Credits</h4>
-          <p id="credits" class="text-5xl font-bold text-emerald-400">0</p>
-        </div>
-        <div class="glow-card p-6 rounded-xl text-center">
-          <h4 class="text-lg font-semibold text-zinc-400 mb-2">Hours Left</h4>
-          <p id="hours" class="text-5xl font-bold text-emerald-400">0</p>
-        </div>
-        <div class="glow-card p-6 rounded-xl">
-          <h4 class="text-lg font-semibold text-zinc-400 mb-2">Roblox Username</h4>
-          <input id="roblox-username" type="text" class="bg-zinc-800/50 border border-zinc-700 p-3 rounded-lg w-full mt-2 focus:outline-none focus:border-emerald-500 transition" placeholder="Enter your Roblox username">
-          <button onclick="saveRobloxUser()" class="mt-4 bg-emerald-500 hover:bg-emerald-600 px-6 py-3 rounded-lg font-semibold transition w-full shadow-lg shadow-emerald-500/20">
-            Save
-          </button>
-        </div>
+      <!-- Roblox Username -->
+      <div class="glow-card p-8 rounded-xl mb-12">
+        <h4 class="text-2xl font-bold mb-4">Your Roblox Username</h4>
+        <input id="roblox-username" type="text" class="bg-zinc-900 border border-zinc-700 p-4 rounded-xl w-full focus:outline-none focus:border-emerald-500 transition mb-4" placeholder="Enter your Roblox username">
+        <button onclick="saveRobloxUser()" class="bg-emerald-500 hover:bg-emerald-600 px-8 py-4 rounded-xl font-semibold text-lg transition w-full shadow-lg shadow-emerald-500/30">
+          Save Username
+        </button>
       </div>
 
-      <!-- BUY CREDITS SECTION – PayPal buttons are now fully inside cards -->
+      <!-- Buy Keys Section with PayPal -->
       <div class="glow-card p-8 rounded-xl mb-12">
-        <h4 class="text-3xl font-bold mb-6 text-center">Buy Credits</h4>
-        <p class="text-center text-zinc-400 mb-8">1€ = 1 Credit • 2 Credits = 1 Hour</p>
+        <h4 class="text-3xl font-bold mb-6 text-center">Buy Keys</h4>
+        <p class="text-center text-zinc-400 mb-8 text-lg">4€ = 1 Key • Instant delivery after payment</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <!-- Each PayPal package gets its own contained card -->
           <div class="glow-card p-6 rounded-xl text-center overflow-hidden">
-            <div class="text-2xl font-bold mb-2">5 Credits</div>
-            <div class="text-4xl font-bold text-emerald-400 mb-4">5€</div>
-            <div id="paypal-5" class="paypal-container"></div>
+            <div class="text-2xl font-bold mb-2">1 Key</div>
+            <div class="text-4xl font-bold text-emerald-400 mb-4">4€</div>
+            <div id="paypal-1" class="paypal-container"></div>
           </div>
           <div class="glow-card p-6 rounded-xl text-center overflow-hidden">
-            <div class="text-2xl font-bold mb-2">10 Credits</div>
-            <div class="text-4xl font-bold text-emerald-400 mb-4">10€</div>
+            <div class="text-2xl font-bold mb-2">3 Keys</div>
+            <div class="text-4xl font-bold text-emerald-400 mb-4">12€</div>
+            <div id="paypal-3" class="paypal-container"></div>
+          </div>
+          <div class="glow-card p-6 rounded-xl text-center overflow-hidden">
+            <div class="text-2xl font-bold mb-2">10 Keys</div>
+            <div class="text-4xl font-bold text-emerald-400 mb-4">40€</div>
             <div id="paypal-10" class="paypal-container"></div>
           </div>
           <div class="glow-card p-6 rounded-xl text-center overflow-hidden">
-            <div class="text-2xl font-bold mb-2">25 Credits</div>
-            <div class="text-4xl font-bold text-emerald-400 mb-4">25€</div>
+            <div class="text-2xl font-bold mb-2">25 Keys</div>
+            <div class="text-4xl font-bold text-emerald-400 mb-4">100€</div>
             <div id="paypal-25" class="paypal-container"></div>
-          </div>
-          <div class="glow-card p-6 rounded-xl text-center overflow-hidden">
-            <div class="text-2xl font-bold mb-2">50 Credits</div>
-            <div class="text-4xl font-bold text-emerald-400 mb-4">50€</div>
-            <div id="paypal-50" class="paypal-container"></div>
           </div>
         </div>
       </div>
 
-      <!-- Your Key -->
+      <!-- Your Keys -->
       <div class="glow-card p-8 rounded-xl mb-12">
-        <h4 class="text-3xl font-bold mb-4">Your Key</h4>
-        <p id="user-key" class="text-lg text-zinc-300 mb-6">No key assigned yet. Buy credits to receive one!</p>
-        <button onclick="fetchUserKey()" class="bg-emerald-500 hover:bg-emerald-600 px-8 py-4 rounded-xl font-semibold text-lg transition shadow-lg shadow-emerald-500/30 hidden w-full" id="refresh-key-btn">
-          Refresh / Check Key
+        <h4 class="text-3xl font-bold mb-4">Your Available Keys</h4>
+        <div id="keys-list" class="space-y-4 text-lg text-zinc-300">
+          <p>No keys yet. Buy some above!</p>
+        </div>
+        <button onclick="fetchUserKeys()" class="mt-6 bg-emerald-500 hover:bg-emerald-600 px-8 py-4 rounded-xl font-semibold text-lg transition w-full shadow-lg shadow-emerald-500/30">
+          Refresh Keys
         </button>
       </div>
 
@@ -170,25 +164,6 @@
             <i class="fas fa-upload mr-2"></i> Upload Keys
           </button>
         </div>
-
-        <div>
-          <h5 class="text-2xl font-semibold text-amber-400 mb-4">Manually Assign Credits</h5>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label class="block text-sm text-zinc-400 mb-2">Discord User ID</label>
-              <input id="admin-target-id" type="text" class="bg-zinc-900 border border-zinc-700 p-4 rounded-xl w-full focus:outline-none focus:border-amber-500 transition" placeholder="1478813503078006905">
-            </div>
-            <div>
-              <label class="block text-sm text-zinc-400 mb-2">Credits Amount</label>
-              <input id="admin-credits-amount" type="number" min="1" value="10" class="bg-zinc-900 border border-zinc-700 p-4 rounded-xl w-full focus:outline-none focus:border-amber-500 transition">
-            </div>
-            <div class="flex items-end">
-              <button onclick="adminAssignCredits()" class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 px-8 py-4 rounded-xl font-bold text-lg transition w-full shadow-lg shadow-amber-500/30">
-                <i class="fas fa-plus-circle mr-2"></i> Assign Credits
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </section>
@@ -202,118 +177,8 @@ const ADMIN_ID = "1049068212182073344";
 
 const REDIRECT_URI = window.location.origin + window.location.pathname;
 
-let user = { credits: 0, hours: 0, roblox: "" };
 let currentUser = null;
-let currentToken = null;
 let currentUserId = null;
-
-// Load / Save data
-function loadUserData() {
-  const saved = localStorage.getItem('trulysAutojoiner');
-  if (saved) Object.assign(user, JSON.parse(saved));
-}
-function saveUserData() {
-  localStorage.setItem('trulysAutojoiner', JSON.stringify(user));
-}
-
-// Render PayPal buttons (now properly contained)
-function renderPricing() {
-  const packages = [
-    { id: 'paypal-5', credits: 5, price: "5.00" },
-    { id: 'paypal-10', credits: 10, price: "10.00" },
-    { id: 'paypal-25', credits: 25, price: "25.00" },
-    { id: 'paypal-50', credits: 50, price: "50.00" }
-  ];
-
-  packages.forEach(pkg => {
-    const container = document.getElementById(pkg.id);
-    if (!container) return;
-
-    paypal.Buttons({
-      style: { shape: 'rect', color: 'gold', layout: 'vertical' },
-      createOrder: (data, actions) => actions.order.create({
-        purchase_units: [{ amount: { value: pkg.price } }]
-      }),
-      onApprove: async (data, actions) => {
-        await actions.order.capture();
-        user.credits += pkg.credits;
-        saveUserData();
-        await assignKeyAfterPurchase(pkg.credits);
-        renderDashboard();
-        alert(`Success! ${pkg.credits} credits added. Check your key below.`);
-      },
-      onError: (err) => {
-        console.error(err);
-        alert("Payment failed. Please try again.");
-      }
-    }).render(`#${pkg.id}`);
-  });
-}
-
-// Assign key after purchase
-async function assignKeyAfterPurchase(creditsPurchased) {
-  if (!currentUserId) return;
-  try {
-    const res = await fetch('/api/manage-keys', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'assign', discordId: currentUserId, creditsPurchased })
-    });
-    const data = await res.json();
-    const el = document.getElementById('user-key');
-    const btn = document.getElementById('refresh-key-btn');
-    if (data.key) {
-      el.textContent = data.key;
-      btn.classList.remove('hidden');
-    } else {
-      el.textContent = data.error || 'No keys available.';
-    }
-  } catch (err) {
-    document.getElementById('user-key').textContent = 'Error fetching key.';
-  }
-}
-
-// Fetch key
-async function fetchUserKey() {
-  if (!currentUserId) return;
-  try {
-    const res = await fetch('/api/manage-keys', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'get', discordId: currentUserId })
-    });
-    const data = await res.json();
-    document.getElementById('user-key').textContent = data.key || 'No key assigned yet.';
-    if (data.key) document.getElementById('refresh-key-btn').classList.remove('hidden');
-  } catch (err) {
-    document.getElementById('user-key').textContent = 'Error fetching key.';
-  }
-}
-
-// Admin upload keys
-async function adminUploadKeys() {
-  if (currentUserId !== ADMIN_ID) return alert("Not authorized");
-  const input = document.getElementById('admin-key-input');
-  const text = input.value.trim();
-  if (!text) return alert("Enter at least one key");
-
-  const keys = text.split('\n').map(k => k.trim()).filter(Boolean);
-  let success = 0;
-
-  for (const keyValue of keys) {
-    try {
-      const res = await fetch('/api/manage-keys', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'upload', discordId: currentUserId, keyValue })
-      });
-      if ((await res.json()).message) success++;
-    } catch {}
-  }
-
-  input.value = '';
-  alert(`Successfully uploaded ${success} key(s).`);
-}
 
 // Discord login
 function discordLogin() {
@@ -347,42 +212,124 @@ function handleCallback() {
       document.getElementById("discord-name").textContent = `@${userData.username}`;
       document.getElementById("landing-page").classList.add("hidden");
       document.getElementById("dashboard").classList.remove("hidden");
-      renderDashboard();
-      fetchUserKey();
+      showAdminPanelIfAllowed();
+      fetchUserKeys();
       window.history.replaceState({}, "", window.location.pathname);
     })
     .catch(() => alert("Failed to load Discord profile"));
   }
 }
 
-// Show admin panel
+// Show admin panel only to admin
 function showAdminPanelIfAllowed() {
   const panel = document.getElementById("admin-panel");
   if (panel && currentUserId === ADMIN_ID) panel.classList.remove("hidden");
 }
 
-// Render dashboard
-function renderDashboard() {
-  document.getElementById("credits").textContent = user.credits;
-  document.getElementById("hours").textContent = user.hours;
-  showAdminPanelIfAllowed();
+// Fetch all unused keys assigned to user
+async function fetchUserKeys() {
+  if (!currentUserId) return;
+  try {
+    const res = await fetch('/api/manage-keys', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'get_keys', discordId: currentUserId })
+    });
+    const data = await res.json();
+    const list = document.getElementById('keys-list');
+    if (data.keys && data.keys.length > 0) {
+      list.innerHTML = data.keys.map(key => `<p class="bg-zinc-900 p-4 rounded-lg font-mono break-all">${key}</p>`).join('');
+    } else {
+      list.innerHTML = '<p>No keys assigned yet. Buy some above!</p>';
+    }
+  } catch (err) {
+    document.getElementById('keys-list').innerHTML = '<p>Error loading keys.</p>';
+  }
 }
 
-// Save Roblox username
+// Admin upload keys
+async function adminUploadKeys() {
+  if (currentUserId !== ADMIN_ID) return alert("Not authorized");
+  const input = document.getElementById('admin-key-input');
+  const text = input.value.trim();
+  if (!text) return alert("Enter at least one key");
+
+  const keys = text.split('\n').map(k => k.trim()).filter(Boolean);
+  let success = 0;
+
+  for (const keyValue of keys) {
+    try {
+      const res = await fetch('/api/manage-keys', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'upload', discordId: currentUserId, keyValue })
+      });
+      if ((await res.json()).message) success++;
+    } catch {}
+  }
+
+  input.value = '';
+  alert(`Successfully uploaded ${success} key(s).`);
+}
+
+// Save Roblox username (optional – kept for now)
 function saveRobloxUser() {
-  user.roblox = document.getElementById("roblox-username").value.trim();
-  saveUserData();
-  alert("Roblox username saved!");
+  const name = document.getElementById("roblox-username").value.trim();
+  if (name) {
+    localStorage.setItem('robloxUsername', name);
+    alert("Roblox username saved!");
+  }
 }
 
 // Init
 window.onload = () => {
-  loadUserData();
-  renderPricing();
-  renderDashboard();
+  // Render PayPal buttons on load
+  const packages = [
+    { id: 'paypal-1', price: "4.00", keys: 1 },
+    { id: 'paypal-3', price: "12.00", keys: 3 },
+    { id: 'paypal-10', price: "40.00", keys: 10 },
+    { id: 'paypal-25', price: "100.00", keys: 25 }
+  ];
+
+  packages.forEach(pkg => {
+    const container = document.getElementById(pkg.id);
+    if (container) {
+      paypal.Buttons({
+        style: { shape: 'rect', color: 'gold', layout: 'vertical' },
+        createOrder: (data, actions) => actions.order.create({
+          purchase_units: [{ amount: { value: pkg.price } }]
+        }),
+        onApprove: async (data, actions) => {
+          await actions.order.capture();
+          await assignKeysAfterPurchase(pkg.keys);
+          fetchUserKeys();
+          alert(`Success! ${pkg.keys} key(s) assigned. Check below.`);
+        },
+        onError: (err) => {
+          console.error(err);
+          alert("Payment failed. Please try again.");
+        }
+      }).render(`#${pkg.id}`);
+    }
+  });
+
   handleCallback();
 };
+
+// Assign keys after payment
+async function assignKeysAfterPurchase(numberOfKeys) {
+  if (!currentUserId) return;
+  try {
+    const res = await fetch('/api/manage-keys', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'assign_multiple', discordId: currentUserId, count: numberOfKeys })
+    });
+    await res.json();
+  } catch (err) {
+    console.error("Key assignment failed", err);
+  }
+}
 </script>
 </body>
 </html>
-
