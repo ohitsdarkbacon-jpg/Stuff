@@ -18,9 +18,6 @@
     body { font-family: 'Inter', system-ui, sans-serif; }
     .neon-text { text-shadow: 0 0 20px #22c55e, 0 0 40px #22c55e; }
     .slot-bar { transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
-    #slots-grid > div { transition: all 0.3s ease; }
-    #slots-grid > div:hover { transform: translateY(-2px); }
-    /* Particle canvas background */
     #particles-canvas {
       position: fixed;
       top: 0; left: 0;
@@ -28,9 +25,7 @@
       z-index: 0;
       pointer-events: none;
     }
-    /* Ensure content sits above particles */
     nav, section, #landing-page { position: relative; z-index: 10; }
-    /* Glowing card effect */
     .glow-card {
       background: rgba(24, 24, 27, 0.7);
       backdrop-filter: blur(12px);
@@ -42,30 +37,25 @@
       box-shadow: 0 0 30px rgba(34, 197, 94, 0.08);
       transform: translateY(-2px);
     }
-    /* Discord pulse animation */
     @keyframes discordPulse {
       0%, 100% { box-shadow: 0 0 40px rgba(88, 101, 242, 0.3); }
       50% { box-shadow: 0 0 80px rgba(88, 101, 242, 0.6), 0 0 120px rgba(88, 101, 242, 0.2); }
     }
     .discord-pulse { animation: discordPulse 2.5s ease-in-out infinite; }
-    /* Floating animation */
     @keyframes float {
       0%, 100% { transform: translateY(0px); }
       50% { transform: translateY(-12px); }
     }
     .float-anim { animation: float 3s ease-in-out infinite; }
-    /* Radial glow behind landing */
     .radial-glow {
       background: radial-gradient(ellipse at center, rgba(88, 101, 242, 0.12) 0%, transparent 60%);
     }
-    /* Subtle grid pattern */
     .grid-pattern {
       background-image:
         linear-gradient(rgba(34, 197, 94, 0.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(34, 197, 94, 0.03) 1px, transparent 1px);
       background-size: 60px 60px;
     }
-    /* Admin panel styles */
     .admin-badge {
       background: linear-gradient(135deg, #f59e0b, #ef4444);
       -webkit-background-clip: text;
@@ -109,88 +99,90 @@
     </div>
   </section>
 
-  <!-- HERO SECTION (shown after login, above dashboard) -->
-  <section id="hero-section" class="pt-24 pb-16 bg-gradient-to-b from-zinc-950/0 to-black/50 hidden">
-    <div class="max-w-5xl mx-auto px-6 text-center">
-      <h2 class="text-6xl font-bold tracking-tighter neon-text mb-4">Roblox Autojoiner</h2>
-      <p class="text-xl text-zinc-400">Buy credits → Convert to hours → Unlock private channel</p>
-    </div>
-  </section>
-
   <!-- DASHBOARD (shows after login) -->
   <section id="dashboard" class="py-20 hidden">
     <div class="max-w-5xl mx-auto px-6">
-      <h3 class="text-4xl font-bold">Dashboard</h3>
-      <p id="discord-name" class="text-emerald-400">@your-discord-username</p>
+      <h3 class="text-4xl font-bold mb-2">Welcome to your Dashboard</h3>
+      <p id="discord-name" class="text-emerald-400 text-xl mb-8">@your-discord-username</p>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
-        <div class="glow-card p-6 rounded-xl">
-          <h4 class="text-lg font-semibold text-zinc-400">Credits</h4>
-          <p id="credits" class="text-4xl font-bold text-emerald-400">0</p>
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div class="glow-card p-6 rounded-xl text-center">
+          <h4 class="text-lg font-semibold text-zinc-400 mb-2">Credits</h4>
+          <p id="credits" class="text-5xl font-bold text-emerald-400">0</p>
+        </div>
+        <div class="glow-card p-6 rounded-xl text-center">
+          <h4 class="text-lg font-semibold text-zinc-400 mb-2">Hours Left</h4>
+          <p id="hours" class="text-5xl font-bold text-emerald-400">0</p>
         </div>
         <div class="glow-card p-6 rounded-xl">
-          <h4 class="text-lg font-semibold text-zinc-400">Hours Left</h4>
-          <p id="hours" class="text-4xl font-bold text-emerald-400">0</p>
+          <h4 class="text-lg font-semibold text-zinc-400 mb-2">Roblox Username</h4>
+          <input id="roblox-username" type="text" class="bg-zinc-800/50 border border-zinc-700 p-3 rounded-lg w-full mt-2 focus:outline-none focus:border-emerald-500 transition" placeholder="Enter your Roblox username">
+          <button onclick="saveRobloxUser()" class="mt-4 bg-emerald-500 hover:bg-emerald-600 px-6 py-3 rounded-lg font-semibold transition w-full shadow-lg shadow-emerald-500/20">
+            Save
+          </button>
         </div>
-        <div class="glow-card p-6 rounded-xl">
-          <h4 class="text-lg font-semibold text-zinc-400">Roblox Username</h4>
-          <input id="roblox-username" type="text" class="bg-zinc-800/50 border border-zinc-700 p-2 rounded-lg w-full mt-2 focus:outline-none focus:border-emerald-500 transition" placeholder="Enter your Roblox username">
-          <button onclick="saveRobloxUser()" class="mt-2 bg-emerald-500 hover:bg-emerald-600 px-4 py-2 rounded-lg transition shadow-lg shadow-emerald-500/20">Save</button>
+      </div>
+
+      <!-- Buy Credits Section with PayPal -->
+      <div class="glow-card p-8 rounded-xl mb-12">
+        <h4 class="text-3xl font-bold mb-6 text-center">Buy Credits (1€ = 1 Credit)</h4>
+        <p class="text-center text-zinc-400 mb-8">2 Credits = 1 Hour of Autojoiner Service</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="price-cards">
+          <!-- PayPal buttons will be inserted here automatically -->
         </div>
       </div>
 
       <!-- Your Assigned Key -->
-      <div class="mt-12">
-        <h4 class="text-2xl font-bold mb-4">Your Key</h4>
-        <div class="glow-card p-6 rounded-xl">
-          <p id="user-key" class="text-lg text-zinc-400">No key assigned yet. Buy credits to receive one!</p>
-          <button onclick="fetchUserKey()" class="mt-4 bg-emerald-500 hover:bg-emerald-600 px-6 py-2 rounded-lg hidden" id="refresh-key-btn">Refresh Key</button>
-        </div>
+      <div class="glow-card p-8 rounded-xl mb-12">
+        <h4 class="text-3xl font-bold mb-4">Your Key</h4>
+        <p id="user-key" class="text-lg text-zinc-300 mb-6">No key assigned yet. Buy credits to receive one!</p>
+        <button onclick="fetchUserKey()" class="bg-emerald-500 hover:bg-emerald-600 px-8 py-4 rounded-xl font-semibold text-lg transition shadow-lg shadow-emerald-500/30 hidden" id="refresh-key-btn">
+          Refresh / Check Key
+        </button>
       </div>
 
-      <!-- Admin Panel (only visible to admin ID 1478813503078006905) -->
-      <div id="admin-panel" class="mt-12 hidden">
-        <h4 class="text-2xl font-bold mb-4"><span class="admin-badge">Admin Panel</span> — Manage Keys & Credits</h4>
-        <div class="glow-card p-8 rounded-xl border-amber-500/20">
-          <!-- Upload Keys -->
-          <div class="mb-8">
-            <h5 class="text-lg font-semibold text-amber-400 mb-2">Upload Keys</h5>
-            <textarea id="admin-key-input" class="bg-zinc-800/50 border border-zinc-700 p-3 rounded-lg w-full h-32 focus:outline-none focus:border-amber-500 transition" placeholder="Paste keys here (one per line)"></textarea>
-            <button onclick="adminUploadKeys()" class="mt-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 px-6 py-3 rounded-lg font-semibold transition shadow-lg shadow-amber-500/20">
-              <i class="fas fa-upload mr-2"></i>Upload Keys
-            </button>
-          </div>
-          <!-- Assign Credits -->
-          <div>
-            <h5 class="text-lg font-semibold text-amber-400 mb-2">Assign Credits</h5>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label class="text-sm text-zinc-400 mb-1 block">Discord User ID</label>
-                <input id="admin-target-id" type="text" class="bg-zinc-800/50 border border-zinc-700 p-3 rounded-lg w-full focus:outline-none focus:border-amber-500 transition" placeholder="Enter Discord User ID">
-              </div>
-              <div>
-                <label class="text-sm text-zinc-400 mb-1 block">Credits to Assign</label>
-                <input id="admin-credits-amount" type="number" min="1" value="10" class="bg-zinc-800/50 border border-zinc-700 p-3 rounded-lg w-full focus:outline-none focus:border-amber-500 transition">
-              </div>
-              <div class="flex items-end">
-                <button onclick="adminAssignCredits()" class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 px-6 py-3 rounded-lg font-semibold w-full transition shadow-lg shadow-amber-500/20">
-                  <i class="fas fa-plus-circle mr-2"></i>Assign Credits
-                </button>
-              </div>
+      <!-- Admin Panel (only visible to admin) -->
+      <div id="admin-panel" class="glow-card p-8 rounded-xl hidden">
+        <h4 class="text-3xl font-bold mb-6"><span class="admin-badge">Admin Panel</span></h4>
+
+        <!-- Upload Keys -->
+        <div class="mb-10">
+          <h5 class="text-2xl font-semibold text-amber-400 mb-4">Upload New Keys</h5>
+          <textarea id="admin-key-input" class="bg-zinc-900 border border-zinc-700 p-4 rounded-xl w-full h-40 focus:outline-none focus:border-amber-500 transition text-white" placeholder="Paste one key per line..."></textarea>
+          <button onclick="adminUploadKeys()" class="mt-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 px-8 py-4 rounded-xl font-bold text-lg transition w-full shadow-lg shadow-amber-500/30">
+            <i class="fas fa-upload mr-2"></i> Upload Keys
+          </button>
+        </div>
+
+        <!-- Assign Credits -->
+        <div>
+          <h5 class="text-2xl font-semibold text-amber-400 mb-4">Manually Assign Credits</h5>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <label class="block text-sm text-zinc-400 mb-2">Discord User ID</label>
+              <input id="admin-target-id" type="text" class="bg-zinc-900 border border-zinc-700 p-4 rounded-xl w-full focus:outline-none focus:border-amber-500 transition" placeholder="1478813503078006905">
+            </div>
+            <div>
+              <label class="block text-sm text-zinc-400 mb-2">Credits Amount</label>
+              <input id="admin-credits-amount" type="number" min="1" value="10" class="bg-zinc-900 border border-zinc-700 p-4 rounded-xl w-full focus:outline-none focus:border-amber-500 transition">
+            </div>
+            <div class="flex items-end">
+              <button onclick="adminAssignCredits()" class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 px-8 py-4 rounded-xl font-bold text-lg transition w-full shadow-lg shadow-amber-500/30">
+                <i class="fas fa-plus-circle mr-2"></i> Assign Credits
+              </button>
             </div>
           </div>
         </div>
       </div>
-
     </div>
   </section>
 
 <script>
 // === CHANGE THESE THREE VALUES ===
-const CLIENT_ID = "1477548522713911448";          // ← Paste your real Discord Client ID here
-const DISCORD_INVITE = "https://discord.gg/3hFk2gb4A6"; // ← Your server invite link
+const CLIENT_ID = "1477548522713911448";
+const DISCORD_INVITE = "https://discord.gg/3hFk2gb4A6";
 const ADMIN_ID = "1478813503078006905";
-
 // =================================
 
 const REDIRECT_URI = window.location.origin + window.location.pathname;
@@ -200,13 +192,13 @@ let currentUser = null;
 let currentToken = null;
 let currentUserId = null;
 
-// Load saved data from localStorage
+// Load saved data
 function loadUserData() {
   const saved = localStorage.getItem('trulysAutojoiner');
   if (saved) Object.assign(user, JSON.parse(saved));
 }
 
-// Save data to localStorage
+// Save data
 function saveUserData() {
   localStorage.setItem('trulysAutojoiner', JSON.stringify(user));
 }
@@ -217,15 +209,19 @@ function renderPricing() {
     {credits:5, price:"5.00"}, {credits:10, price:"10.00"},
     {credits:25, price:"25.00"}, {credits:50, price:"50.00"}
   ];
+
   let html = '';
   packages.forEach(pkg => {
     const id = `paypal-${pkg.credits}`;
-    html += `<div class="glow-card p-6 rounded-xl text-center">
-      <div class="text-2xl font-bold mb-2">${pkg.credits} Credits</div>
-      <div class="text-3xl mb-4">${pkg.price}€</div>
-      <div id="${id}"></div>
-    </div>`;
+    html += `
+      <div class="glow-card p-6 rounded-xl text-center">
+        <div class="text-2xl font-bold mb-2">${pkg.credits} Credits</div>
+        <div class="text-4xl font-bold text-emerald-400 mb-4">${pkg.price}€</div>
+        <div id="${id}" class="mt-4"></div>
+      </div>
+    `;
   });
+
   const container = document.getElementById('price-cards');
   if (container) container.innerHTML = html;
 
@@ -235,8 +231,10 @@ function renderPricing() {
       const el = document.getElementById(id);
       if (el) {
         paypal.Buttons({
-          style: { shape: 'rect', color: 'gold' },
-          createOrder: (data, actions) => actions.order.create({ purchase_units: [{ amount: { value: pkg.price } }] }),
+          style: { shape: 'rect', color: 'gold', layout: 'vertical' },
+          createOrder: (data, actions) => actions.order.create({
+            purchase_units: [{ amount: { value: pkg.price } }]
+          }),
           onApprove: async (data, actions) => {
             await actions.order.capture();
             user.credits += pkg.credits;
@@ -245,14 +243,17 @@ function renderPricing() {
             renderDashboard();
             alert(`Success! ${pkg.credits} credits added. Check your key below.`);
           },
-          onError: (err) => alert("Payment failed. Try again.")
+          onError: (err) => {
+            console.error(err);
+            alert("Payment failed. Please try again.");
+          }
         }).render(`#${id}`);
       }
     });
-  }, 800);
+  }, 1000); // Give PayPal SDK time to load
 }
 
-// Assign key after successful purchase
+// Assign key after purchase
 async function assignKeyAfterPurchase(creditsPurchased) {
   if (!currentUserId) return;
   try {
@@ -262,19 +263,21 @@ async function assignKeyAfterPurchase(creditsPurchased) {
       body: JSON.stringify({ action: 'assign', discordId: currentUserId, creditsPurchased })
     });
     const result = await response.json();
+    const keyEl = document.getElementById('user-key');
+    const btn = document.getElementById('refresh-key-btn');
     if (result.key) {
-      document.getElementById('user-key').textContent = result.key;
-      document.getElementById('refresh-key-btn').classList.remove('hidden');
+      keyEl.textContent = result.key;
+      btn.classList.remove('hidden');
     } else {
-      document.getElementById('user-key').textContent = 'No keys available. Contact admin.';
+      keyEl.textContent = result.error || 'No keys available. Contact admin.';
     }
   } catch (err) {
     console.error(err);
-    document.getElementById('user-key').textContent = 'Error fetching key. Try refreshing.';
+    document.getElementById('user-key').textContent = 'Error fetching key.';
   }
 }
 
-// Fetch user's assigned key (for refresh button)
+// Fetch user's key
 async function fetchUserKey() {
   if (!currentUserId) return;
   try {
@@ -284,25 +287,28 @@ async function fetchUserKey() {
       body: JSON.stringify({ action: 'get', discordId: currentUserId })
     });
     const result = await response.json();
+    const keyEl = document.getElementById('user-key');
+    const btn = document.getElementById('refresh-key-btn');
     if (result.key) {
-      document.getElementById('user-key').textContent = result.key;
-      document.getElementById('refresh-key-btn').classList.remove('hidden');
+      keyEl.textContent = result.key;
+      btn.classList.remove('hidden');
     } else {
-      document.getElementById('user-key').textContent = 'No key assigned yet.';
+      keyEl.textContent = 'No key assigned yet.';
     }
   } catch (err) {
-    document.getElementById('user-key').textContent = 'Error fetching key. Try again.';
+    document.getElementById('user-key').textContent = 'Error fetching key.';
   }
 }
 
-// Admin: Upload keys
+// Admin upload keys
 async function adminUploadKeys() {
   if (currentUserId !== ADMIN_ID) return alert("Not authorized");
   const input = document.getElementById('admin-key-input');
-  const keysText = input.value.trim();
-  if (!keysText) return alert("Enter at least one key");
+  const text = input.value.trim();
+  if (!text) return alert("Enter at least one key");
 
-  const keys = keysText.split('\n').map(k => k.trim()).filter(Boolean);
+  const keys = text.split('\n').map(k => k.trim()).filter(Boolean);
+  let successCount = 0;
 
   for (const keyValue of keys) {
     try {
@@ -312,16 +318,12 @@ async function adminUploadKeys() {
         body: JSON.stringify({ action: 'upload', discordId: currentUserId, keyValue })
       });
       const data = await res.json();
-      if (data.error) {
-        alert(`Failed to upload "${keyValue}": ${data.error}`);
-      }
-    } catch (err) {
-      alert(`Error uploading "${keyValue}": ${err.message}`);
-    }
+      if (!data.error) successCount++;
+    } catch (e) {}
   }
 
   input.value = '';
-  alert("Upload complete! Check which keys were accepted.");
+  alert(`Uploaded ${successCount} key(s) successfully.`);
 }
 
 // Discord login
@@ -338,7 +340,7 @@ function discordLogin() {
   window.location.href = `https://discord.com/oauth2/authorize?${params}`;
 }
 
-// Handle Discord callback
+// Handle callback
 function handleCallback() {
   const hash = window.location.hash.substring(1);
   if (!hash) return;
@@ -355,7 +357,6 @@ function handleCallback() {
       currentUserId = userData.id;
       document.getElementById("discord-name").textContent = `@${userData.username}`;
       document.getElementById("landing-page").classList.add("hidden");
-      document.getElementById("hero-section").classList.remove("hidden");
       document.getElementById("dashboard").classList.remove("hidden");
       renderDashboard();
       fetchUserKey();
@@ -368,9 +369,7 @@ function handleCallback() {
 // Show admin panel only to admin
 function showAdminPanelIfAllowed() {
   const panel = document.getElementById("admin-panel");
-  if (panel && currentUserId === ADMIN_ID) {
-    panel.classList.remove("hidden");
-  }
+  if (panel && currentUserId === ADMIN_ID) panel.classList.remove("hidden");
 }
 
 // Render dashboard
@@ -397,4 +396,3 @@ window.onload = () => {
 </script>
 </body>
 </html>
-
