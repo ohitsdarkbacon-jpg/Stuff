@@ -1,134 +1,127 @@
-// server.js - Full backend for Render.com (Node.js)
-
 import express from 'express';
-import { createClient } from '@supabase/supabase-js';
+import path from 'path';
 import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(express.json());
-app.use(express.static(__dirname)); // Serves index.html and other static files
 
-// === YOUR SUPABASE CREDENTIALS ===
-const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
-const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // service_role key (secret!)
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+// In-memory storage (lost on restart – fine for now)
+let keyPool = [];               // unused keys (array of strings)
+let activeSlots = [];           // max 6: [{discordId, expiry, key}]
+let waitingQueue = [];          // [{discordId, hoursRequested}]
 
-// === CONFIG ===
-const ADMIN_DISCORD_ID = "1478813503078006905"; // your admin ID
-const MAX_ACTIVE_SLOTS = 6;
-const KEY_DURATION_MS = 60 * 60 * 1000; // 1 hour
+const MAX_SLOTS = 6;
+const HOUR_MS = 60 * 60 * 1000; // 1 hour
+const ADMIN_ID = "1049068212182073344"; // ← YOUR Discord ID
 
-// ===================== API ENDPOINT: /api/manage-keys =====================
-app.post('/api/manage-keys', async (req, res) => {
-  const { action, discordId, keyValue, count } = req.body;
+// Serve static files (index.html, etc.)
+app.use(express.static(__dirname));
+
+// Catch-all route – serve index.html for any non-API path
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// ──────────────────────────────────────────────
+// API: /api/manage-keys
+// ──────────────────────────────────────────────
+app.post('/api/manage-keys', (req, res) => {
+  const { action, discordId, keys, amount } = req.body;
 
   if (!action || !discordId) {
     return res.status(400).json({ error: 'Missing action or discordId' });
   }
 
-  // ──────────────── ADMIN ONLY ────────────────
-  if (discordId !== ADMIN_DISCORD_ID) {
-    return res.status(403).json({ error: 'Unauthorized' });
+  // ─── Admin-only actions ───
+  if (discordId !== ADMIN_ID) {
+    return res.status(403).json({ error: 'Admin only' });
   }
 
-  // 1. Upload a single key (admin)
+  // Upload keys to pool
   if (action === 'upload') {
-    if (!keyValue) return res.status(400).json({ error: 'Missing keyValue' });
-
-    const { error } = await supabase
-      .from('keys')
-      .insert([{ key_value: keyValue, is_used: false }]);
-
-    if (error) return res.status(500).json({ error: error.message });
-    return res.json({ message: 'Key uploaded successfully' });
-  }
-
-  // 2. Admin gives themselves any number of keys
-  if (action === 'assign_multiple') {
-    if (!count || count < 1) return res.status(400).json({ error: 'Invalid count' });
-
-    const assigned = [];
-    let remaining = count;
-
-    while (remaining > 0) {
-      const { data: key } = await supabase
-        .from('keys')
-        .select('key_value')
-        .eq('is_used', false)
-        .is('assigned_user_id', null)
-        .limit(1)
-        .single();
-
-      if (!key) break;
-
-      await supabase
-        .from('keys')
-        .update({
-          assigned_user_id: discordId,
-          is_used: true,
-          expires_at: new Date(Date.now() + KEY_DURATION_MS).toISOString()
-        })
-        .eq('key_value', key.key_value);
-
-      assigned.push(key.key_value);
-      remaining--;
+    if (!Array.isArray(keys) || keys.length === 0) {
+      return res.status(400).json({ error: 'keys must be non-empty array' });
     }
+    keyPool.push(...keys);
+    return res.json({ message: `Added ${keys.length} keys. Pool now: ${keyPool.length}` });
+  }
+
+  // Admin gives himself keys/hours
+  if (action === 'give-self') {
+    if (!amount || amount < 1) return res.status(400).json({ error: 'amount >= 1 required' });
+    waitingQueue.push({ discordId, hoursRequested: amount });
+    return res.json({ message: `Queued ${amount} hours for admin` });
+  }
+
+  // ─── Everyone ───
+
+  // Buy hours → activate or queue
+  if (action === 'buy') {
+    if (!amount || amount < 1) return res.status(400).json({ error: 'amount >= 1 required' });
+
+    const freeSlots = MAX_SLOTS - activeSlots.length;
+
+    if (freeSlots >= amount) {
+      // Activate immediately
+      const assigned = [];
+      for (let i = 0; i < amount; i++) {
+        if (keyPool.length === 0) break;
+        const key = keyPool.shift();
+        const expiry = Date.now() + HOUR_MS;
+        activeSlots.push({ discordId, expiry, key });
+        assigned.push({ key, expiry: new Date(expiry).toISOString() });
+      }
+      return res.json({ success: assigned.length, assigned });
+    } else {
+      // Queue
+      waitingQueue.push({ discordId, hoursRequested: amount });
+      return res.json({ success: 0, queued: amount, message: 'Slots full → queued' });
+    }
+  }
+
+  // Get current status
+  if (action === 'status') {
+    const myActive = activeSlots.find(s => s.discordId === discordId);
+    const timeLeftMs = myActive ? Math.max(0, myActive.expiry - Date.now()) : 0;
+
+    const queuePosition = waitingQueue.findIndex(q => q.discordId === discordId) + 1;
 
     return res.json({
-      success: assigned.length,
-      assigned_keys: assigned,
-      message: assigned.length === count ? 'All keys assigned' : 'Some keys queued (no more available)'
+      active: !!myActive,
+      timeLeftSeconds: Math.floor(timeLeftMs / 1000),
+      queuePosition: queuePosition > 0 ? queuePosition : null,
+      queueLength: waitingQueue.length,
+      activeCount: activeSlots.length
     });
   }
 
-  // ──────────────── USER ACTIONS (no admin check needed) ────────────────
-
-  // 3. Get user status: time left + queued keys
-  if (action === 'get_status') {
-    // Active key with time left
-    const { data: active } = await supabase
-      .from('keys')
-      .select('expires_at')
-      .eq('assigned_user_id', discordId)
-      .eq('is_used', true)
-      .gt('expires_at', new Date().toISOString())
-      .order('expires_at', { ascending: true })
-      .limit(1)
-      .single();
-
-    const timeLeftSeconds = active?.expires_at
-      ? Math.max(0, Math.floor((new Date(active.expires_at) - Date.now()) / 1000))
-      : 0;
-
-    // Queued keys count
-    const { count: queuedCount } = await supabase
-      .from('keys')
-      .select('*', { count: 'exact', head: true })
-      .eq('assigned_user_id', discordId)
-      .eq('is_used', false);
-
-    // Optional: current active slots (for admin view or UI)
-    const { data: activeSlots } = await supabase
-      .from('keys')
-      .select('assigned_user_id, expires_at')
-      .eq('is_used', true)
-      .gt('expires_at', new Date().toISOString());
-
-    return res.json({
-      timeLeftSeconds,
-      queuedKeys: queuedCount || 0,
-      activeSlots: activeSlots || []
-    });
-  }
-
-  return res.status(400).json({ error: 'Invalid action' });
+  return res.status(400).json({ error: 'Unknown action' });
 });
 
-// Start server
+// Background task: expire slots + activate queued users
+setInterval(() => {
+  const now = Date.now();
+
+  // Remove expired
+  activeSlots = activeSlots.filter(s => s.expiry > now);
+
+  // Fill free slots from queue
+  while (activeSlots.length < MAX_SLOTS && waitingQueue.length > 0 && keyPool.length > 0) {
+    const next = waitingQueue.shift();
+    let remaining = next.hoursRequested;
+
+    while (remaining > 0 && keyPool.length > 0) {
+      const key = keyPool.shift();
+      const expiry = now + HOUR_MS;
+      activeSlots.push({ discordId: next.discordId, expiry, key });
+      remaining--;
+    }
+  }
+}, 30000); // check every 30 seconds
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
