@@ -257,29 +257,49 @@
     }
 
     // Slot & key status (update this with your real backend call)
-    async function updateSlotStatus() {
-      // Placeholder - replace with real fetch to your /api endpoint
-      document.getElementById("time-left").textContent = "00:15:42";
+async function updateSlotStatus() {
+  if (!currentUserId) return;
 
-      // Example: show some occupied slots
-      document.getElementById("slot-1").classList.add("slot-occupied");
-      document.getElementById("slot-1").innerHTML = `<div class="text-sm text-slate-400 mb-1">Slot 1</div><div class="font-bold">User123</div><div class="text-xs text-emerald-400">12 min left</div>`;
+  try {
+    const response = await fetch('/api/manage-keys', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'get_status', discordId: currentUserId })
+    });
 
-      document.getElementById("slot-4").classList.add("slot-occupied");
-      document.getElementById("slot-4").innerHTML = `<div class="text-sm text-slate-400 mb-1">Slot 4</div><div class="font-bold">GamerX</div><div class="text-xs text-emerald-400">38 min left</div>`;
+    if (!response.ok) throw new Error('Backend error');
+
+    const data = await response.json();
+
+    // Update time left
+    const timeEl = document.getElementById('time-left');
+    if (data.timeLeftSeconds > 0) {
+      const totalSeconds = data.timeLeftSeconds;
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      timeEl.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      timeEl.classList.add('text-emerald-400');
+    } else {
+      timeEl.textContent = 'No active slot';
+      timeEl.classList.remove('text-emerald-400');
     }
 
-    // Admin upload (placeholder)
-    function uploadKeys() {
-      alert("Admin key upload - connect this to your backend");
+    // Update queued keys
+    const queuedEl = document.getElementById('queued-keys');
+    if (data.queuedKeys?.length > 0) {
+      queuedEl.innerHTML = data.queuedKeys.map(key => 
+        `<div class="bg-zinc-900/70 p-4 rounded-lg font-mono break-all">${key}</div>`
+      ).join('');
+    } else {
+      queuedEl.innerHTML = '<div class="alert alert-info bg-slate-800/50 border-slate-600">No queued keys</div>';
     }
 
-    // PayPal (basic init - add your logic)
-    function initPaypal() {
-      console.log("PayPal ready");
-      // Add real PayPal button rendering here
-    }
-
+  } catch (err) {
+    console.error('Failed to fetch slot status:', err);
+    document.getElementById('time-left').textContent = 'Error loading status';
+  }
+}
     // Init
     window.onload = () => {
       handleDiscordCallback();
@@ -288,3 +308,4 @@
   </script>
 </body>
 </html>
+
