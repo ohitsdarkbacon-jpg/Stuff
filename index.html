@@ -30,7 +30,6 @@
     </div>
   </nav>
 
-  <!-- Login screen -->
   <div id="login-screen" class="min-h-screen flex flex-col items-center justify-center text-center px-6">
     <h2 class="text-5xl md:text-7xl font-black neon mb-6">Truly's Autojoiner</h2>
     <p class="text-xl md:text-2xl text-slate-300 mb-12 max-w-3xl">
@@ -42,7 +41,6 @@
     </button>
   </div>
 
-  <!-- Dashboard -->
   <div id="dashboard" class="hidden pt-24 pb-20 px-6 max-w-6xl mx-auto space-y-12">
 
     <div class="text-center">
@@ -51,45 +49,43 @@
       </h2>
     </div>
 
-    <!-- 6 Slots -->
     <div class="card bg-slate-900/70 border border-slate-700 shadow-2xl">
       <div class="card-body">
         <h3 class="text-2xl font-bold mb-6 text-center">Live Slots (max 6)</h3>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <div id="slot-1" class="slot-free rounded-xl p-4 text-center border border-slate-600">
             <div class="text-sm text-slate-400 mb-1">Slot 1</div>
-            <div class="font-bold">Free</div>
+            <div class="font-bold">Loading...</div>
           </div>
           <div id="slot-2" class="slot-free rounded-xl p-4 text-center border border-slate-600">
             <div class="text-sm text-slate-400 mb-1">Slot 2</div>
-            <div class="font-bold">Free</div>
+            <div class="font-bold">Loading...</div>
           </div>
           <div id="slot-3" class="slot-free rounded-xl p-4 text-center border border-slate-600">
             <div class="text-sm text-slate-400 mb-1">Slot 3</div>
-            <div class="font-bold">Free</div>
+            <div class="font-bold">Loading...</div>
           </div>
           <div id="slot-4" class="slot-free rounded-xl p-4 text-center border border-slate-600">
             <div class="text-sm text-slate-400 mb-1">Slot 4</div>
-            <div class="font-bold">Free</div>
+            <div class="font-bold">Loading...</div>
           </div>
           <div id="slot-5" class="slot-free rounded-xl p-4 text-center border border-slate-600">
             <div class="text-sm text-slate-400 mb-1">Slot 5</div>
-            <div class="font-bold">Free</div>
+            <div class="font-bold">Loading...</div>
           </div>
           <div id="slot-6" class="slot-free rounded-xl p-4 text-center border border-slate-600">
             <div class="text-sm text-slate-400 mb-1">Slot 6</div>
-            <div class="font-bold">Free</div>
+            <div class="font-bold">Loading...</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Your status -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
       <div class="card bg-slate-900/70 border border-slate-700 shadow-2xl">
         <div class="card-body text-center">
           <h3 class="text-xl font-bold mb-4">Your Remaining Time</h3>
-          <div class="text-5xl font-black" id="time-left">00:00:00</div>
+          <div class="text-5xl font-black" id="time-left">Loading...</div>
         </div>
       </div>
 
@@ -105,7 +101,6 @@
       </div>
     </div>
 
-    <!-- Buy -->
     <div class="card bg-slate-900/70 border border-slate-700 shadow-2xl">
       <div class="card-body">
         <h3 class="text-2xl font-bold mb-6 text-center">Buy More Time</h3>
@@ -144,7 +139,6 @@
       </div>
     </div>
 
-    <!-- Admin Panel -->
     <div id="admin-panel" class="hidden card bg-red-950/40 border border-red-700/50 shadow-2xl">
       <div class="card-body">
         <h3 class="text-3xl text-red-400 mb-6">Admin Panel</h3>
@@ -172,7 +166,7 @@
 
   <script>
     const CLIENT_ID = "1477548522713911448";
-    const REDIRECT_URI = "https://stuff-2eft.onrender.com/"; // YOUR REAL URL HERE
+    const REDIRECT_URI = "https://stuff-2eft.onrender.com/"; // ← CHANGE TO YOUR ACTUAL RENDER URL
     const ADMIN_ID = "1049068212182073344";
 
     let currentUserId = null;
@@ -219,14 +213,20 @@
           window.history.replaceState({}, "", window.location.pathname);
         })
         .catch(err => {
-          console.error(err);
-          alert("Login failed. Try again.");
+          console.error("Login failed:", err);
+          alert("Login failed. Check console for details.");
         });
       }
     }
 
     async function updateStatus() {
       if (!currentUserId) return;
+
+      const timeEl = document.getElementById("time-left");
+      const queuedEl = document.getElementById("queued-keys");
+
+      timeEl.textContent = "Loading...";
+      queuedEl.innerHTML = '<div class="alert alert-info bg-slate-800/50 border-slate-600">Loading...</div>';
 
       try {
         const res = await fetch('/api/manage-keys', {
@@ -235,13 +235,16 @@
           body: JSON.stringify({ action: 'get_status', discordId: currentUserId })
         });
 
-        if (!res.ok) throw new Error('Backend error');
+        if (!res.ok) {
+          throw new Error(`Backend responded with status ${res.status}`);
+        }
 
         const data = await res.json();
 
-        document.getElementById("time-left").textContent = formatTime(data.timeLeftSeconds || 0);
+        // Time left
+        timeEl.textContent = formatTime(data.timeLeftSeconds || 0);
 
-        const queuedEl = document.getElementById("queued-keys");
+        // Queued keys
         if (data.queuedKeys && data.queuedKeys.length > 0) {
           queuedEl.innerHTML = data.queuedKeys.map(key => 
             `<div class="bg-slate-800 p-3 rounded font-mono break-all text-sm">${key}</div>`
@@ -250,10 +253,31 @@
           queuedEl.innerHTML = '<div class="alert alert-info bg-slate-800/50 border-slate-600">No queued keys</div>';
         }
 
+        // Slots (if backend returns activeSlots array)
+        if (data.activeSlots) {
+          const slots = document.querySelectorAll('[id^="slot-"]');
+          slots.forEach((slot, i) => {
+            const info = data.activeSlots[i];
+            if (info) {
+              slot.classList.add('slot-occupied');
+              slot.innerHTML = `
+                <div class="text-sm text-slate-400 mb-1">Slot ${i+1}</div>
+                <div class="font-bold">${info.assigned_user_id.slice(0,8)}...</div>
+                <div class="text-xs text-emerald-400">
+                  ${Math.floor((new Date(info.expires_at) - Date.now()) / 60000)} min left
+                </div>
+              `;
+            } else {
+              slot.classList.remove('slot-occupied');
+              slot.innerHTML = `<div class="text-sm text-slate-400 mb-1">Slot ${i+1}</div><div class="font-bold">Free</div>`;
+            }
+          });
+        }
+
       } catch (err) {
-        console.error('Status update failed:', err);
-        document.getElementById("time-left").textContent = 'Error loading';
-        document.getElementById("queued-keys").innerHTML = '<div class="alert alert-error">Failed to load queued keys</div>';
+        console.error("Status fetch failed:", err);
+        timeEl.textContent = 'Error loading time';
+        queuedEl.innerHTML = `<div class="alert alert-error">Failed to load: ${err.message}</div>`;
       }
     }
 
@@ -299,16 +323,16 @@
           body: JSON.stringify({ action: 'assign_multiple', discordId: currentUserId, count })
         });
 
-        if (!res.ok) throw new Error('Backend error');
+        if (!res.ok) throw new Error(`Backend error: ${res.status}`);
 
-        alert(`Assigned ${count} keys to yourself`);
+        const data = await res.json();
+        alert(`Success! Assigned ${data.success || count} keys`);
         updateStatus();
       } catch (err) {
         alert("Failed to assign keys: " + err.message);
       }
     }
 
-    // PayPal buttons
     function initPaypal() {
       const packs = [
         { id: "paypal-1", price: "4.00", keys: 1 },
@@ -326,11 +350,14 @@
           onApprove: async (data, actions) => {
             await actions.order.capture();
             try {
-              await fetch('/api/manage-keys', {
+              const res = await fetch('/api/manage-keys', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'assign_multiple', discordId: currentUserId, count: p.keys })
               });
+
+              if (!res.ok) throw new Error('Queue failed');
+
               alert(`Success! ${p.keys} hour(s) queued.`);
               updateStatus();
             } catch (err) {
@@ -349,5 +376,6 @@
   </script>
 </body>
 </html>
+
 
 
