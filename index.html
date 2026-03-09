@@ -176,7 +176,7 @@
   <script>
     // ===================== CONFIG =====================
     const CLIENT_ID = "1477548522713911448";
-    const REDIRECT_URI = "https://stuff-2eft.onrender.com";  // ← NO trailing slash!
+    const REDIRECT_URI = "https://stuff-2eft.onrender.com/";  // ← NO trailing slash!
     const ADMIN_ID   = "1049068212182073344";
 
     let currentUserId = null;
@@ -188,7 +188,7 @@
 
   const params = new URLSearchParams({
     client_id: CLIENT_ID,
-    redirect_uri: "https://stuff-2eft.onrender.com",  // ← your exact Render URL here
+    redirect_uri: "https://stuff-2eft.onrender.com/",  // ← your exact Render URL here
     response_type: "token",
     scope: "identify",
     state: state
@@ -346,5 +346,6 @@
   </script>
 </body>
 </html>
+
 
 
