@@ -1,317 +1,319 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Truly's Autojoiner • Roblox Auto Join Service</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"/>
+<title>Truly's Autojoiner</title>
 
-  <script src="https://www.paypal.com/sdk/js?client-id=AZFXwnf32b8gYaBWN0GEcAl_qKRPewK223MTCzOlh1SWyJ3LBFYJnNAbvQKYvh0Pfx0e1l-1y-LaySWs&currency=EUR&components=buttons"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"/>
 
-  <style>
-    body { background: #0a0e17; color: #e2e8f0; min-height: 100vh; }
-    .glow { box-shadow: 0 0 20px rgba(16,185,129,0.3); }
-    .neon { text-shadow: 0 0 10px #10b981; }
-  </style>
+<script src="https://www.paypal.com/sdk/js?client-id=AZFXwnf32b8gYaBWN0GEcAl_qKRPewK223MTCzOlh1SWyJ3LBFYJnNAbvQKYvh0Pfx0e1l-1y-LaySWs&currency=EUR&components=buttons"></script>
+
+<style>
+body{background:#0a0e17;color:#e2e8f0}
+.neon{text-shadow:0 0 10px #10b981}
+</style>
+
 </head>
 <body>
 
-  <nav class="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-lg border-b border-slate-800">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-      <h1 class="text-2xl font-bold neon">TRULY'S AUTOJOINER</h1>
-      <button onclick="discordLogin()" class="btn bg-emerald-600 hover:bg-emerald-700 text-white gap-2">
-        <i class="fab fa-discord"></i> Login
-      </button>
-    </div>
-  </nav>
+<nav class="fixed top-0 w-full bg-black/80 border-b border-slate-800 backdrop-blur-lg">
+<div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+<h1 class="text-2xl font-bold neon">TRULY'S AUTOJOINER</h1>
 
-  <div id="login-screen" class="min-h-screen flex flex-col items-center justify-center text-center px-6">
-    <h2 class="text-5xl md:text-7xl font-black neon mb-6">Truly's Autojoiner</h2>
-    <p class="text-xl md:text-2xl text-slate-300 mb-12 max-w-3xl">
-      Private Roblox server joining • 4 € = 1 hour<br/>
-      Max 6 users active at once • Keys activate one after another
-    </p>
-    <button onclick="discordLogin()" class="btn btn-lg bg-emerald-600 hover:bg-emerald-700 text-white gap-3 shadow-xl">
-      <i class="fab fa-discord text-2xl"></i> Login with Discord
-    </button>
-  </div>
+<button onclick="discordLogin()" class="btn bg-emerald-600 text-white gap-2">
+<i class="fab fa-discord"></i> Login
+</button>
+</div>
+</nav>
 
-  <div id="dashboard" class="hidden pt-24 pb-20 px-6 max-w-6xl mx-auto space-y-12">
 
-    <div class="text-center">
-      <h2 class="text-4xl font-bold mb-2">
-        Welcome back, <span id="username" class="text-emerald-400">@...</span>
-      </h2>
-    </div>
+<!-- LOGIN -->
+<div id="login-screen" class="min-h-screen flex flex-col justify-center items-center text-center px-6">
 
-    <div class="card bg-slate-900/70 border border-slate-700 shadow-2xl">
-      <div class="card-body text-center">
-        <h3 class="text-xl font-bold mb-4">Your Active Key</h3>
-        <div class="text-3xl font-mono mb-2" id="active-key">None</div>
-        <div class="text-5xl font-black" id="time-left">00:00:00</div>
-      </div>
-    </div>
+<h2 class="text-6xl font-black neon mb-6">Truly's Autojoiner</h2>
 
-    <div class="card bg-slate-900/70 border border-slate-700 shadow-2xl">
-      <div class="card-body">
-        <h3 class="text-xl font-bold mb-4">Queued Keys</h3>
-        <div id="queued-keys" class="space-y-2">
-          <div class="alert alert-info bg-slate-800/50 border-slate-600">
-            No queued keys
-          </div>
-        </div>
-      </div>
-    </div>
+<p class="text-xl text-slate-300 mb-12">
+Private Roblox server joining<br>
+4 € = 1 hour
+</p>
 
-    <div class="card bg-slate-900/70 border border-slate-700 shadow-2xl">
-      <div class="card-body">
-        <h3 class="text-2xl font-bold mb-6 text-center">Buy More Time</h3>
-        <p class="text-center text-slate-400 mb-8">4 € = 1 hour – next key activates after current expires</p>
+<button onclick="discordLogin()" class="btn btn-lg bg-emerald-600 text-white gap-3">
+<i class="fab fa-discord"></i>
+Login with Discord
+</button>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div class="card bg-slate-800/70 border border-slate-600 shadow-xl">
-            <div class="card-body text-center">
-              <div class="text-2xl font-bold mb-2">1 Hour</div>
-              <div class="text-4xl font-black text-emerald-400 mb-4">4 €</div>
-              <div id="paypal-1" class="min-h-[140px] flex items-center justify-center"></div>
-            </div>
-          </div>
-          <div class="card bg-slate-800/70 border border-slate-600 shadow-xl">
-            <div class="card-body text-center">
-              <div class="text-2xl font-bold mb-2">3 Hours</div>
-              <div class="text-4xl font-black text-emerald-400 mb-4">12 €</div>
-              <div id="paypal-3" class="min-h-[140px] flex items-center justify-center"></div>
-            </div>
-          </div>
-          <div class="card bg-slate-800/70 border border-slate-600 shadow-xl">
-            <div class="card-body text-center">
-              <div class="text-2xl font-bold mb-2">10 Hours</div>
-              <div class="text-4xl font-black text-emerald-400 mb-4">40 €</div>
-              <div id="paypal-10" class="min-h-[140px] flex items-center justify-center"></div>
-            </div>
-          </div>
-          <div class="card bg-slate-800/70 border border-slate-600 shadow-xl">
-            <div class="card-body text-center">
-              <div class="text-2xl font-bold mb-2">25 Hours</div>
-              <div class="text-4xl font-black text-emerald-400 mb-4">100 €</div>
-              <div id="paypal-25" class="min-h-[140px] flex items-center justify-center"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+</div>
 
-    <div id="admin-panel" class="hidden card bg-red-950/40 border border-red-700/50 shadow-2xl">
-      <div class="card-body">
-        <h3 class="text-3xl text-red-400 mb-6">Admin Panel</h3>
 
-        <div class="mb-8">
-          <h4 class="text-xl text-amber-400 mb-3">Upload Keys to Pool</h4>
-          <textarea id="admin-keys" class="textarea textarea-bordered w-full h-32 font-mono bg-black/60 text-white" placeholder="One key per line"></textarea>
-          <button onclick="uploadKeys()" class="btn btn-error w-full mt-4">
-            Upload
-          </button>
-        </div>
+<!-- DASHBOARD -->
+<div id="dashboard" class="hidden pt-24 pb-20 px-6 max-w-5xl mx-auto space-y-10">
 
-        <div>
-          <h4 class="text-xl text-amber-400 mb-3">Give Myself Hours</h4>
-          <div class="flex gap-4">
-            <input id="admin-self-count" type="number" min="1" value="5" class="input input-bordered w-32 bg-black/60 text-white" />
-            <button onclick="giveSelfKeys()" class="btn btn-success flex-1">
-              Give
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+<h2 class="text-4xl text-center font-bold">
+Welcome back <span id="username" class="text-emerald-400"></span>
+</h2>
 
-  <script>
-    const CLIENT_ID = "1477548522713911448";
-    const REDIRECT_URI = "https://trulysfinder.onrender.com/"; // YOUR REAL URL
-    const ADMIN_ID = "1049068212182073344";
 
-    let currentUserId = null;
+<!-- SLOT STATUS -->
+<div class="card bg-slate-900 border border-slate-700">
+<div class="card-body text-center">
 
-    function discordLogin() {
-      const state = Math.random().toString(36).substring(2);
-      localStorage.setItem("dc_state", state);
+<h3 class="text-xl font-bold">Server Slots</h3>
 
-      const params = new URLSearchParams({
-        client_id: CLIENT_ID,
-        redirect_uri: REDIRECT_URI,
-        response_type: "token",
-        scope: "identify",
-        state
-      });
+<div class="text-5xl font-black text-emerald-400">
+<span id="slots-used">0</span> / 6
+</div>
 
-      window.location.href = `https://discord.com/oauth2/authorize?${params}`;
-    }
+<div id="slot-message" class="text-slate-400"></div>
 
-    function handleCallback() {
-      const hash = window.location.hash.substring(1);
-      if (!hash) return;
+</div>
+</div>
 
-      const params = new URLSearchParams(hash);
-      const token = params.get("access_token");
-      const state = params.get("state");
 
-      if (token && state === localStorage.getItem("dc_state")) {
-        fetch("https://discord.com/api/users/@me", {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        .then(r => r.json())
-        .then(user => {
-          currentUserId = user.id;
-          document.getElementById("username").textContent = user.username;
-          document.getElementById("login-screen").style.display = "none";
-          document.getElementById("dashboard").style.display = "block";
+<!-- ACTIVE -->
+<div class="card bg-slate-900 border border-slate-700">
+<div class="card-body text-center">
 
-          if (user.id === ADMIN_ID) {
-            document.getElementById("admin-panel").style.display = "block";
-          }
+<h3 class="text-xl font-bold">Active Time</h3>
 
-          updateStatus();
-          window.history.replaceState({}, "", window.location.pathname);
-        })
-        .catch(err => {
-          console.error("Login failed:", err);
-          alert("Login failed. Try again.");
-        });
-      }
-    }
+<div id="time-left" class="text-5xl font-black">
+00:00:00
+</div>
 
-    async function updateStatus() {
-      if (!currentUserId) return;
+<div class="text-slate-400 mt-2">
+Active Key: <span id="active-key">None</span>
+</div>
 
-      try {
-        const res = await fetch('/api/manage-keys', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'status', discordId: currentUserId })
-        });
+</div>
+</div>
 
-        if (!res.ok) throw new Error(`Backend status: ${res.status}`);
 
-        const data = await res.json();
+<!-- QUEUE -->
+<div class="card bg-slate-900 border border-slate-700">
+<div class="card-body text-center">
 
-        document.getElementById("time-left").textContent = formatTime(data.timeLeftSeconds || 0);
+<h3 class="text-xl font-bold">Queued Hours</h3>
 
-        const queuedEl = document.getElementById("queued-keys");
-        if (data.queuedHours > 0) {
-          queuedEl.innerHTML = `${data.queuedHours} hours queued (position ${data.queuePosition || 'N/A'} of ${data.queueLength})`;
-        } else {
-          queuedEl.innerHTML = 'No queued hours';
-        }
+<div id="queued-hours" class="text-4xl font-black text-amber-400">
+0
+</div>
 
-      } catch (err) {
-        console.error("Update failed:", err);
-        document.getElementById("time-left").textContent = 'Error';
-        document.getElementById("queued-keys").innerHTML = 'Error loading queue';
-      }
-    }
+<div id="queue-position" class="text-slate-400"></div>
 
-    function formatTime(seconds) {
-      if (seconds <= 0) return "00:00:00";
-      const h = Math.floor(seconds / 3600);
-      const m = Math.floor((seconds % 3600) / 60);
-      const s = seconds % 60;
-      return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-    }
+</div>
+</div>
 
-    async function uploadKeys() {
-      if (currentUserId !== ADMIN_ID) return alert("Not admin");
 
-      const text = document.getElementById("admin-keys").value.trim();
-      if (!text) return alert("Enter keys");
+<!-- PAYPAL -->
+<div class="card bg-slate-900 border border-slate-700">
+<div class="card-body">
 
-      const keysArray = text.split('\n').map(k => k.trim()).filter(Boolean);
+<h3 class="text-2xl text-center font-bold mb-6">Buy Time</h3>
 
-      try {
-        const res = await fetch('/api/manage-keys', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'upload', discordId: ADMIN_ID, keys: keysArray })
-        });
+<div class="grid grid-cols-2 md:grid-cols-4 gap-6">
 
-        const data = await res.json();
-        alert(data.message);
-        document.getElementById("admin-keys").value = "";
-      } catch (err) {
-        alert("Upload failed: " + err.message);
-      }
-    }
+<div>
+<div class="text-center mb-2 font-bold">1 Hour</div>
+<div id="paypal1"></div>
+</div>
 
-    async function giveSelfKeys() {
-      if (currentUserId !== ADMIN_ID) return alert("Not admin");
+<div>
+<div class="text-center mb-2 font-bold">3 Hours</div>
+<div id="paypal3"></div>
+</div>
 
-      const amount = parseInt(document.getElementById("admin-self-count").value);
-      if (!amount || amount < 1) return alert("Enter a number");
+<div>
+<div class="text-center mb-2 font-bold">10 Hours</div>
+<div id="paypal10"></div>
+</div>
 
-      try {
-        const res = await fetch('/api/manage-keys', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'give-self', discordId: ADMIN_ID, amount })
-        });
+<div>
+<div class="text-center mb-2 font-bold">25 Hours</div>
+<div id="paypal25"></div>
+</div>
 
-        const data = await res.json();
-        alert(data.message || `Queued ${amount} hours`);
-        updateStatus();
-      } catch (err) {
-        alert("Failed: " + err.message);
-      }
-    }
+</div>
 
-    function initPaypal() {
-      const packs = [
-        { id: "paypal-1", price: "4.00", hours: 1 },
-        { id: "paypal-3", price: "12.00", hours: 3 },
-        { id: "paypal-10", price: "40.00", hours: 10 },
-        { id: "paypal-25", price: "100.00", hours: 25 }
-      ];
+</div>
+</div>
 
-      packs.forEach(p => {
-        paypal.Buttons({
-          style: { shape: "rect", color: "gold", layout: "vertical" },
-          createOrder: (data, actions) => actions.order.create({
-            purchase_units: [{ amount: { value: p.price } }]
-          }),
-          onApprove: async (data, actions) => {
-            await actions.order.capture();
-            try {
-              const res = await fetch('/api/manage-keys', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'buy', discordId: currentUserId, amount: p.hours })
-              });
+</div>
 
-              const result = await res.json();
-              alert(result.message || `Started with 1 hour, queued ${result.queued || 0} more`);
-              updateStatus();
-            } catch (err) {
-              alert("Queue failed: " + err.message);
-            }
-          },
-          onError: () => alert("Payment failed.")
-        }).render(`#${p.id}`);
-      });
-    }
 
-    window.onload = () => {
-      handleCallback();
-      initPaypal();
-      setInterval(updateStatus, 30000);
-    };
-  </script>
+
+<script>
+
+const CLIENT_ID="1477548522713911448"
+const REDIRECT_URI = "https://trulysfinder.onrender.com/";
+const ADMIN_ID="1049068212182073344"
+
+let currentUserId=null
+
+
+function discordLogin(){
+
+const state=Math.random().toString(36)
+
+localStorage.setItem("dc_state",state)
+
+const params=new URLSearchParams({
+client_id:CLIENT_ID,
+redirect_uri:REDIRECT_URI,
+response_type:"token",
+scope:"identify",
+state
+})
+
+window.location=`https://discord.com/oauth2/authorize?${params}`
+
+}
+
+
+
+function handleCallback(){
+
+const hash=window.location.hash.substring(1)
+
+if(!hash)return
+
+const params=new URLSearchParams(hash)
+
+const token=params.get("access_token")
+
+if(!token)return
+
+fetch("https://discord.com/api/users/@me",{
+headers:{Authorization:`Bearer ${token}`}
+})
+.then(r=>r.json())
+.then(user=>{
+
+currentUserId=user.id
+
+document.getElementById("username").textContent=user.username
+
+document.getElementById("login-screen").style.display="none"
+
+document.getElementById("dashboard").style.display="block"
+
+updateStatus()
+
+})
+
+}
+
+
+
+function formatTime(sec){
+
+let h=Math.floor(sec/3600)
+let m=Math.floor((sec%3600)/60)
+let s=sec%60
+
+return `${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}:${s.toString().padStart(2,"0")}`
+
+}
+
+
+
+async function updateStatus(){
+
+if(!currentUserId)return
+
+const res=await fetch("/api/manage-keys",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({action:"status",discordId:currentUserId})
+})
+
+const data=await res.json()
+
+document.getElementById("slots-used").textContent=data.activeCount
+
+document.getElementById("slot-message").textContent=
+data.activeCount>=6?"All slots full":"Slots available"
+
+document.getElementById("time-left").textContent=formatTime(data.timeLeftSeconds)
+
+document.getElementById("active-key").textContent=data.activeKey||"None"
+
+document.getElementById("queued-hours").textContent=data.queuedHours
+
+if(data.queuePosition){
+
+document.getElementById("queue-position").textContent=
+`Waiting for slot — position ${data.queuePosition} / ${data.queueLength}`
+
+}else{
+
+document.getElementById("queue-position").textContent=""
+
+}
+
+}
+
+
+
+function initPaypal(){
+
+const packs=[
+{id:"paypal1",price:"4",hours:1},
+{id:"paypal3",price:"12",hours:3},
+{id:"paypal10",price:"40",hours:10},
+{id:"paypal25",price:"100",hours:25}
+]
+
+packs.forEach(p=>{
+
+paypal.Buttons({
+
+createOrder:(d,a)=>a.order.create({
+purchase_units:[{amount:{value:p.price}}]
+}),
+
+onApprove:async(d,a)=>{
+
+await a.order.capture()
+
+await fetch("/api/manage-keys",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+action:"buy",
+discordId:currentUserId,
+amount:p.hours
+})
+})
+
+updateStatus()
+
+}
+
+}).render(`#${p.id}`)
+
+})
+
+}
+
+
+
+window.onload=()=>{
+
+handleCallback()
+
+initPaypal()
+
+setInterval(updateStatus,5000)
+
+}
+
+</script>
+
 </body>
 </html>
-
-
-
 
 
 
