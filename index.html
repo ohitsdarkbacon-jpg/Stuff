@@ -3,149 +3,99 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Truly's Autojoiner • Roblox Auto Join Service</title>
+  <title>Truly's Autojoiner</title>
 
-  <!-- Tailwind + daisyUI -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
-
-  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"/>
 
   <!-- PayPal SDK -->
   <script src="https://www.paypal.com/sdk/js?client-id=AZFXwnf32b8gYaBWN0GEcAl_qKRPewK223MTCzOlh1SWyJ3LBFYJnNAbvQKYvh0Pfx0e1l-1y-LaySWs&currency=EUR&components=buttons"></script>
 
   <style>
-    :root {
-      --bg: #0a0e17;
-      --card: #111827;
-      --text: #e2e8f0;
-      --text-dim: #94a3b8;
-      --accent: #10b981;
-      --accent-dark: #059669;
-    }
     body {
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
+      background: #0a0e17;
+      color: #e2e8f0;
     }
-    .glow { box-shadow: 0 0 25px rgba(16, 185, 129, 0.25); }
-    .glow-sm { box-shadow: 0 0 15px rgba(16, 185, 129, 0.15); }
-    .neon-text { text-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent); }
-    .slot-occupied {
-      background: rgba(16, 185, 129, 0.15);
-      border-color: var(--accent);
-    }
-    .slot-free {
-      background: rgba(30, 41, 59, 0.5);
-      border-color: #334155;
-    }
+    .glow { box-shadow: 0 0 20px rgba(16,185,129,0.3); }
+    .neon { text-shadow: 0 0 10px #10b981; }
   </style>
 </head>
-<body class="antialiased">
+<body class="min-h-screen">
 
-  <!-- Navbar -->
+  <!-- Navbar (always visible) -->
   <nav class="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-lg border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-emerald-700 flex items-center justify-center text-2xl font-black shadow-lg shadow-emerald-900/50">
           T
         </div>
-        <h1 class="text-2xl font-bold tracking-tight neon-text">TRULY'S AUTOJOINER</h1>
+        <h1 class="text-2xl font-bold tracking-tight neon">TRULY'S AUTOJOINER</h1>
       </div>
-      <button onclick="discordLogin()" class="btn bg-emerald-600 hover:bg-emerald-700 border-none text-white gap-2 shadow-lg shadow-emerald-900/40">
-        <i class="fab fa-discord text-xl"></i>
-        Login with Discord
+      <button id="login-btn" class="btn bg-emerald-600 hover:bg-emerald-700 text-white gap-2">
+        <i class="fab fa-discord"></i> Login with Discord
       </button>
     </div>
   </nav>
 
   <!-- Main Content -->
-  <main class="pt-28 pb-20 px-6 max-w-6xl mx-auto">
+  <main class="pt-24 pb-20 px-6 max-w-5xl mx-auto">
 
-    <!-- Landing -->
-    <div id="landing" class="text-center py-24">
-      <h2 class="text-5xl md:text-7xl font-black tracking-tight neon-text mb-6">
-        Roblox Auto Joiner
-      </h2>
-      <p class="text-xl md:text-2xl text-slate-300 mb-10 max-w-3xl mx-auto">
-        Fast private server joins • Max 6 users at once<br/>
-        <span class="text-emerald-400 font-semibold">4 € = 1 hour</span> – keys queue automatically
-      </p>
-      <button onclick="discordLogin()" class="btn btn-lg bg-emerald-600 hover:bg-emerald-700 text-white gap-3 shadow-xl shadow-emerald-900/50">
-        <i class="fab fa-discord text-2xl"></i> Login with Discord
-      </button>
+    <!-- Login Required Overlay -->
+    <div id="login-overlay" class="fixed inset-0 bg-black/90 flex items-center justify-center z-40">
+      <div class="text-center max-w-md px-6">
+        <h2 class="text-4xl font-bold mb-6 neon">Login Required</h2>
+        <p class="text-lg text-slate-300 mb-10">
+          You need to login with Discord to access the autojoiner service.
+        </p>
+        <button onclick="discordLogin()" class="btn btn-lg bg-emerald-600 hover:bg-emerald-700 text-white gap-3 shadow-xl">
+          <i class="fab fa-discord text-2xl"></i> Login with Discord
+        </button>
+      </div>
     </div>
 
-    <!-- Dashboard -->
+    <!-- Dashboard (hidden until login) -->
     <div id="dashboard" class="hidden space-y-12">
 
       <!-- Welcome -->
       <div class="text-center">
-        <h2 class="text-4xl font-bold mb-3">
-          Welcome back, <span id="username" class="text-emerald-400">@...</span>
+        <h2 class="text-4xl font-bold mb-2">
+          Welcome, <span id="username" class="text-emerald-400">@...</span>
         </h2>
+        <p class="text-slate-400">Your autojoiner dashboard</p>
       </div>
 
-      <!-- 6 Slots -->
-      <div class="card bg-slate-900/60 border border-slate-700 shadow-2xl">
-        <div class="card-body">
-          <h3 class="card-title text-2xl mb-6 text-center">Live Slots (6 max)</h3>
-          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <div id="slot-1" class="slot-free rounded-xl p-4 text-center border border-slate-600">
-              <div class="text-sm text-slate-400 mb-1">Slot 1</div>
-              <div class="text-lg font-bold">Free</div>
-            </div>
-            <div id="slot-2" class="slot-free rounded-xl p-4 text-center border border-slate-600">
-              <div class="text-sm text-slate-400 mb-1">Slot 2</div>
-              <div class="text-lg font-bold">Free</div>
-            </div>
-            <div id="slot-3" class="slot-free rounded-xl p-4 text-center border border-slate-600">
-              <div class="text-sm text-slate-400 mb-1">Slot 3</div>
-              <div class="text-lg font-bold">Free</div>
-            </div>
-            <div id="slot-4" class="slot-free rounded-xl p-4 text-center border border-slate-600">
-              <div class="text-sm text-slate-400 mb-1">Slot 4</div>
-              <div class="text-lg font-bold">Free</div>
-            </div>
-            <div id="slot-5" class="slot-free rounded-xl p-4 text-center border border-slate-600">
-              <div class="text-sm text-slate-400 mb-1">Slot 5</div>
-              <div class="text-lg font-bold">Free</div>
-            </div>
-            <div id="slot-6" class="slot-free rounded-xl p-4 text-center border border-slate-600">
-              <div class="text-sm text-slate-400 mb-1">Slot 6</div>
-              <div class="text-lg font-bold">Free</div>
-            </div>
+      <!-- Current Slot -->
+      <div class="card bg-slate-900/70 border border-slate-700 shadow-2xl glow">
+        <div class="card-body text-center">
+          <h3 class="text-2xl font-bold mb-4">Your Active Slot</h3>
+          <div class="text-6xl font-black mb-2" id="time-left">00:00:00</div>
+          <p class="text-slate-300 mb-4">remaining</p>
+          <div class="badge badge-success gap-2 px-6 py-4 text-lg">
+            <i class="fas fa-key"></i> Key active
           </div>
         </div>
       </div>
 
-      <!-- Your Status -->
-      <div class="card bg-slate-900/60 border border-slate-700 shadow-2xl">
+      <!-- Queued Keys -->
+      <div class="card bg-slate-900/70 border border-slate-700 shadow-2xl">
         <div class="card-body">
-          <h3 class="card-title text-2xl mb-6">Your Slot & Time</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div class="text-center">
-              <div class="text-5xl font-black mb-2" id="time-left">00:00:00</div>
-              <div class="text-lg text-slate-300">remaining on active key</div>
-            </div>
-            <div>
-              <h4 class="text-xl font-semibold mb-3">Queued Keys</h4>
-              <div id="queued-keys" class="space-y-2">
-                <div class="alert alert-info bg-slate-800/50 border-slate-600">
-                  No queued keys yet
-                </div>
-              </div>
+          <h3 class="text-2xl font-bold mb-4 flex items-center gap-3">
+            <i class="fas fa-clock text-yellow-400"></i> Queued Keys
+          </h3>
+          <div id="queued-keys" class="space-y-3">
+            <div class="alert alert-info bg-slate-800/50 border-slate-600">
+              No queued keys yet
             </div>
           </div>
         </div>
       </div>
 
       <!-- Buy Keys -->
-      <div class="card bg-slate-900/60 border border-slate-700 shadow-2xl">
+      <div class="card bg-slate-900/70 border border-slate-700 shadow-2xl">
         <div class="card-body">
-          <h3 class="card-title text-3xl mb-6 text-center">Buy More Time</h3>
-          <p class="text-center text-slate-400 mb-8">4 € = 1 hour – added to your queue</p>
+          <h3 class="text-3xl font-bold mb-6 text-center">Buy More Time</h3>
+          <p class="text-center text-slate-400 mb-8">4 € = 1 hour – added to queue</p>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div class="card bg-slate-800/70 shadow-xl hover:shadow-2xl transition-all border border-slate-600">
@@ -155,6 +105,7 @@
                 <div id="paypal-1" class="w-full min-h-[140px] flex items-center justify-center"></div>
               </div>
             </div>
+
             <div class="card bg-slate-800/70 shadow-xl hover:shadow-2xl transition-all border border-slate-600">
               <div class="card-body items-center text-center">
                 <div class="text-3xl font-bold mb-2">3 Hours</div>
@@ -162,6 +113,7 @@
                 <div id="paypal-3" class="w-full min-h-[140px] flex items-center justify-center"></div>
               </div>
             </div>
+
             <div class="card bg-slate-800/70 shadow-xl hover:shadow-2xl transition-all border border-slate-600">
               <div class="card-body items-center text-center">
                 <div class="text-3xl font-bold mb-2">10 Hours</div>
@@ -169,6 +121,7 @@
                 <div id="paypal-10" class="w-full min-h-[140px] flex items-center justify-center"></div>
               </div>
             </div>
+
             <div class="card bg-slate-800/70 shadow-xl hover:shadow-2xl transition-all border border-slate-600">
               <div class="card-body items-center text-center">
                 <div class="text-3xl font-bold mb-2">25 Hours</div>
@@ -185,20 +138,18 @@
         <div class="card-body">
           <h3 class="card-title text-3xl text-red-400 mb-6">Admin Controls</h3>
 
-          <!-- Upload Keys -->
           <div class="mb-10">
-            <h4 class="text-xl font-semibold text-amber-400 mb-4">Upload New Keys</h4>
+            <h4 class="text-xl font-semibold text-amber-400 mb-4">Upload Keys</h4>
             <textarea id="admin-keys" class="textarea textarea-bordered textarea-lg w-full h-40 font-mono bg-black/60 text-white" placeholder="Paste keys here – one per line"></textarea>
             <button onclick="uploadKeys()" class="btn btn-error btn-lg w-full mt-4">
               <i class="fas fa-upload mr-2"></i> Upload Keys
             </button>
           </div>
 
-          <!-- Give Myself Keys -->
           <div>
             <h4 class="text-xl font-semibold text-amber-400 mb-4">Give Myself Keys</h4>
             <div class="flex gap-4">
-              <input id="admin-self-keys" type="number" min="1" value="5" class="input input-bordered w-32 bg-black/60 text-white" placeholder="Number of keys" />
+              <input id="admin-self-keys" type="number" min="1" value="5" class="input input-bordered w-32 bg-black/60 text-white" placeholder="Number" />
               <button onclick="giveSelfKeys()" class="btn btn-success flex-1">
                 <i class="fas fa-gift mr-2"></i> Give Myself Keys
               </button>
@@ -210,14 +161,13 @@
   </main>
 
   <script>
-    // CONFIG
     const CLIENT_ID = "1477548522713911448";
-    const REDIRECT_URI = "https://stuff-2eft.onrender.com/"; // CHANGE TO YOUR REAL URL (NO TRAILING SLASH!)
+    const REDIRECT_URI = "https://stuff-2eft.onrender.com/"; // CHANGE TO YOUR REAL URL
     const ADMIN_ID = "1049068212182073344";
 
     let currentUserId = null;
 
-    // Discord Login
+    // Login
     function discordLogin() {
       const state = Math.random().toString(36).substring(2);
       localStorage.setItem("dc_state", state);
@@ -227,13 +177,13 @@
         redirect_uri: REDIRECT_URI,
         response_type: "token",
         scope: "identify",
-        state: state
+        state
       });
 
       window.location.href = `https://discord.com/oauth2/authorize?${params}`;
     }
 
-    function handleDiscordCallback() {
+    function handleCallback() {
       const hash = window.location.hash.substring(1);
       if (!hash) return;
 
@@ -249,7 +199,7 @@
         .then(user => {
           currentUserId = user.id;
           document.getElementById("username").textContent = user.username;
-          document.getElementById("landing").classList.add("hidden");
+          document.getElementById("login-overlay").classList.add("hidden");
           document.getElementById("dashboard").classList.remove("hidden");
 
           if (user.id === ADMIN_ID) {
@@ -259,78 +209,63 @@
           updateSlotStatus();
           window.history.replaceState({}, "", window.location.pathname);
         })
-        .catch(err => {
-          console.error("Login failed:", err);
-          alert("Login failed. Please try again or check redirect URI.");
+        .catch(() => {
+          alert("Login failed. Try again.");
         });
       }
     }
 
-    // Placeholder slot status (replace with real backend fetch)
+    // Placeholder slot status
     async function updateSlotStatus() {
-      // Fake data for demo
+      // Replace with real fetch later
       document.getElementById("time-left").textContent = "00:15:42";
-
-      // Demo occupied slots
-      document.getElementById("slot-1").classList.add("slot-occupied");
-      document.getElementById("slot-1").innerHTML = `<div class="text-sm text-slate-400 mb-1">Slot 1</div><div class="font-bold">User123</div><div class="text-xs text-emerald-400">12 min left</div>`;
-
-      document.getElementById("slot-4").classList.add("slot-occupied");
-      document.getElementById("slot-4").innerHTML = `<div class="text-sm text-slate-400 mb-1">Slot 4</div><div class="font-bold">GamerX</div><div class="text-xs text-emerald-400">38 min left</div>`;
     }
 
-    // Admin: Upload keys
+    // Admin upload
     async function uploadKeys() {
-      alert("Admin key upload – connect to backend");
+      alert("Admin upload – connect to backend");
     }
 
-    // Admin: Give myself any number of keys
+    // Admin give self keys
     async function giveSelfKeys() {
-      if (!currentUserId || currentUserId !== ADMIN_ID) {
-        alert("Only admin can use this");
-        return;
-      }
-
       const amount = parseInt(document.getElementById("admin-self-keys").value);
-      if (!amount || amount < 1) {
-        alert("Enter a valid number of keys");
-        return;
-      }
+      if (!amount || amount < 1) return alert("Enter a valid number");
 
-      try {
-        const res = await fetch('/api/manage-keys', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'assign_multiple',
-            discordId: currentUserId,
-            count: amount
-          })
-        });
-
-        if (res.ok) {
-          alert(`Successfully gave yourself ${amount} key(s)! Check your queued keys.`);
-          updateSlotStatus();
-        } else {
-          alert("Failed to assign keys – check backend.");
-        }
-      } catch (err) {
-        alert("Error: " + err.message);
-      }
+      alert(`Giving yourself ${amount} keys... (connect to backend)`);
     }
 
-    // PayPal init (basic)
+    // PayPal buttons
     function initPaypal() {
-      console.log("PayPal ready – add rendering logic here if needed");
+      const packs = [
+        { id: "paypal-1", price: "4.00", keys: 1 },
+        { id: "paypal-3", price: "12.00", keys: 3 },
+        { id: "paypal-10", price: "40.00", keys: 10 },
+        { id: "paypal-25", price: "100.00", keys: 25 }
+      ];
+
+      packs.forEach(p => {
+        paypal.Buttons({
+          style: { shape: "rect", color: "gold", layout: "vertical" },
+          createOrder: (data, actions) => actions.order.create({
+            purchase_units: [{ amount: { value: p.price } }]
+          }),
+          onApprove: async (data, actions) => {
+            await actions.order.capture();
+            alert(`Success! ${p.keys} hour(s) queued.`);
+            // Call backend to assign keys here
+          },
+          onError: err => alert("Payment failed.")
+        }).render(`#${p.id}`);
+      });
     }
 
-    // Init
     window.onload = () => {
-      handleDiscordCallback();
+      handleCallback();
       initPaypal();
     };
   </script>
 </body>
 </html>
+
 
 
