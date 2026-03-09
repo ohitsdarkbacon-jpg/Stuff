@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -7,10 +8,9 @@
 <title>Truly's Autojoiner</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
+
 <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"/>
-
-<script src="https://www.paypal.com/sdk/js?client-id=AZFXwnf32b8gYaBWN0GEcAl_qKRPewK223MTCzOlh1SWyJ3LBFYJnNAbvQKYvh0Pfx0e1l-1y-LaySWs&currency=EUR&components=buttons"></script>
 
 <style>
 body{background:#0a0e17;color:#e2e8f0}
@@ -30,8 +30,6 @@ body{background:#0a0e17;color:#e2e8f0}
 </div>
 </nav>
 
-
-<!-- LOGIN -->
 <div id="login-screen" class="min-h-screen flex flex-col justify-center items-center text-center px-6">
 
 <h2 class="text-6xl font-black neon mb-6">Truly's Autojoiner</h2>
@@ -48,16 +46,12 @@ Login with Discord
 
 </div>
 
-
-<!-- DASHBOARD -->
 <div id="dashboard" class="hidden pt-24 pb-20 px-6 max-w-5xl mx-auto space-y-10">
 
 <h2 class="text-4xl text-center font-bold">
 Welcome back <span id="username" class="text-emerald-400"></span>
 </h2>
 
-
-<!-- SLOT STATUS -->
 <div class="card bg-slate-900 border border-slate-700">
 <div class="card-body text-center">
 
@@ -72,8 +66,6 @@ Welcome back <span id="username" class="text-emerald-400"></span>
 </div>
 </div>
 
-
-<!-- ACTIVE -->
 <div class="card bg-slate-900 border border-slate-700">
 <div class="card-body text-center">
 
@@ -90,8 +82,6 @@ Active Key: <span id="active-key">None</span>
 </div>
 </div>
 
-
-<!-- QUEUE -->
 <div class="card bg-slate-900 border border-slate-700">
 <div class="card-body text-center">
 
@@ -106,34 +96,24 @@ Active Key: <span id="active-key">None</span>
 </div>
 </div>
 
-
-<!-- PAYPAL -->
-<div class="card bg-slate-900 border border-slate-700">
+<div id="admin-panel" class="hidden card bg-red-950/40 border border-red-700/50">
 <div class="card-body">
 
-<h3 class="text-2xl text-center font-bold mb-6">Buy Time</h3>
+<h3 class="text-2xl text-red-400 mb-4">Admin Panel</h3>
 
-<div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+<textarea id="admin-keys" class="textarea textarea-bordered w-full h-32 font-mono bg-black text-white" placeholder="One key per line"></textarea>
 
-<div>
-<div class="text-center mb-2 font-bold">1 Hour</div>
-<div id="paypal1"></div>
-</div>
+<button onclick="uploadKeys()" class="btn btn-error w-full mt-3">
+Upload Keys
+</button>
 
-<div>
-<div class="text-center mb-2 font-bold">3 Hours</div>
-<div id="paypal3"></div>
-</div>
+<div class="flex gap-3 mt-6">
 
-<div>
-<div class="text-center mb-2 font-bold">10 Hours</div>
-<div id="paypal10"></div>
-</div>
+<input id="admin-self-count" type="number" value="5" class="input input-bordered w-32 bg-black text-white"/>
 
-<div>
-<div class="text-center mb-2 font-bold">25 Hours</div>
-<div id="paypal25"></div>
-</div>
+<button onclick="giveSelfKeys()" class="btn btn-success flex-1">
+Give Myself Hours
+</button>
 
 </div>
 
@@ -141,16 +121,15 @@ Active Key: <span id="active-key">None</span>
 </div>
 
 </div>
-
-
 
 <script>
 
 const CLIENT_ID="1477548522713911448"
-const REDIRECT_URI = "https://trulysfinder.onrender.com/";
+const REDIRECT_URI="https://trulysfinder.onrender.com/"
 const ADMIN_ID="1049068212182073344"
 
 let currentUserId=null
+let expiryTimestamp=0
 
 
 function discordLogin(){
@@ -196,8 +175,11 @@ currentUserId=user.id
 document.getElementById("username").textContent=user.username
 
 document.getElementById("login-screen").style.display="none"
-
 document.getElementById("dashboard").style.display="block"
+
+if(user.id===ADMIN_ID){
+document.getElementById("admin-panel").style.display="block"
+}
 
 updateStatus()
 
@@ -214,6 +196,24 @@ let m=Math.floor((sec%3600)/60)
 let s=sec%60
 
 return `${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}:${s.toString().padStart(2,"0")}`
+
+}
+
+
+
+function startTimer(){
+
+setInterval(()=>{
+
+if(!expiryTimestamp)return
+
+let remaining=Math.floor((expiryTimestamp-Date.now())/1000)
+
+if(remaining<0)remaining=0
+
+document.getElementById("time-left").textContent=formatTime(remaining)
+
+},1000)
 
 }
 
@@ -236,65 +236,62 @@ document.getElementById("slots-used").textContent=data.activeCount
 document.getElementById("slot-message").textContent=
 data.activeCount>=6?"All slots full":"Slots available"
 
-document.getElementById("time-left").textContent=formatTime(data.timeLeftSeconds)
-
 document.getElementById("active-key").textContent=data.activeKey||"None"
 
 document.getElementById("queued-hours").textContent=data.queuedHours
 
 if(data.queuePosition){
-
 document.getElementById("queue-position").textContent=
 `Waiting for slot — position ${data.queuePosition} / ${data.queueLength}`
-
 }else{
-
 document.getElementById("queue-position").textContent=""
+}
+
+expiryTimestamp=data.expiry
 
 }
 
-}
 
 
+async function uploadKeys(){
 
-function initPaypal(){
+const text=document.getElementById("admin-keys").value.trim()
 
-const packs=[
-{id:"paypal1",price:"4",hours:1},
-{id:"paypal3",price:"12",hours:3},
-{id:"paypal10",price:"40",hours:10},
-{id:"paypal25",price:"100",hours:25}
-]
+if(!text)return
 
-packs.forEach(p=>{
-
-paypal.Buttons({
-
-createOrder:(d,a)=>a.order.create({
-purchase_units:[{amount:{value:p.price}}]
-}),
-
-onApprove:async(d,a)=>{
-
-await a.order.capture()
+const keys=text.split("\n").map(k=>k.trim()).filter(Boolean)
 
 await fetch("/api/manage-keys",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({
-action:"buy",
-discordId:currentUserId,
-amount:p.hours
+action:"upload",
+discordId:ADMIN_ID,
+keys
+})
+})
+
+alert("Keys uploaded")
+
+}
+
+
+
+async function giveSelfKeys(){
+
+const amount=parseInt(document.getElementById("admin-self-count").value)
+
+await fetch("/api/manage-keys",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+action:"give-self",
+discordId:ADMIN_ID,
+amount
 })
 })
 
 updateStatus()
-
-}
-
-}).render(`#${p.id}`)
-
-})
 
 }
 
@@ -304,9 +301,9 @@ window.onload=()=>{
 
 handleCallback()
 
-initPaypal()
+startTimer()
 
-setInterval(updateStatus,5000)
+setInterval(updateStatus,10000)
 
 }
 
