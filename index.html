@@ -15,13 +15,10 @@
     body { background: #0a0e17; color: #e2e8f0; min-height: 100vh; }
     .glow { box-shadow: 0 0 20px rgba(16,185,129,0.3); }
     .neon { text-shadow: 0 0 10px #10b981; }
-    .slot-occupied { background: rgba(16,185,129,0.15); border-color: #10b981; }
-    .slot-free { background: rgba(30,41,59,0.5); border-color: #334155; }
   </style>
 </head>
 <body>
 
-  <!-- Navbar -->
   <nav class="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-lg border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
       <h1 class="text-2xl font-bold neon">TRULY'S AUTOJOINER</h1>
@@ -31,19 +28,17 @@
     </div>
   </nav>
 
-  <!-- Login screen -->
   <div id="login-screen" class="min-h-screen flex flex-col items-center justify-center text-center px-6">
     <h2 class="text-5xl md:text-7xl font-black neon mb-6">Truly's Autojoiner</h2>
     <p class="text-xl md:text-2xl text-slate-300 mb-12 max-w-3xl">
       Private Roblox server joining • 4 € = 1 hour<br/>
-      Max 6 users active at once • Keys queue automatically
+      Max 6 users active at once • Keys activate one after another
     </p>
     <button onclick="discordLogin()" class="btn btn-lg bg-emerald-600 hover:bg-emerald-700 text-white gap-3 shadow-xl">
       <i class="fab fa-discord text-2xl"></i> Login with Discord
     </button>
   </div>
 
-  <!-- Dashboard -->
   <div id="dashboard" class="hidden pt-24 pb-20 px-6 max-w-6xl mx-auto space-y-12">
 
     <div class="text-center">
@@ -52,65 +47,29 @@
       </h2>
     </div>
 
-    <!-- Slots -->
+    <div class="card bg-slate-900/70 border border-slate-700 shadow-2xl">
+      <div class="card-body text-center">
+        <h3 class="text-xl font-bold mb-4">Your Active Key</h3>
+        <div class="text-3xl font-mono mb-2" id="active-key">None</div>
+        <div class="text-5xl font-black" id="time-left">00:00:00</div>
+      </div>
+    </div>
+
     <div class="card bg-slate-900/70 border border-slate-700 shadow-2xl">
       <div class="card-body">
-        <h3 class="text-2xl font-bold mb-6 text-center">Live Slots (max 6)</h3>
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <div id="slot-1" class="slot-free rounded-xl p-4 text-center border border-slate-600">
-            <div class="text-sm text-slate-400 mb-1">Slot 1</div>
-            <div class="font-bold">Free</div>
-          </div>
-          <div id="slot-2" class="slot-free rounded-xl p-4 text-center border border-slate-600">
-            <div class="text-sm text-slate-400 mb-1">Slot 2</div>
-            <div class="font-bold">Free</div>
-          </div>
-          <div id="slot-3" class="slot-free rounded-xl p-4 text-center border border-slate-600">
-            <div class="text-sm text-slate-400 mb-1">Slot 3</div>
-            <div class="font-bold">Free</div>
-          </div>
-          <div id="slot-4" class="slot-free rounded-xl p-4 text-center border border-slate-600">
-            <div class="text-sm text-slate-400 mb-1">Slot 4</div>
-            <div class="font-bold">Free</div>
-          </div>
-          <div id="slot-5" class="slot-free rounded-xl p-4 text-center border border-slate-600">
-            <div class="text-sm text-slate-400 mb-1">Slot 5</div>
-            <div class="font-bold">Free</div>
-          </div>
-          <div id="slot-6" class="slot-free rounded-xl p-4 text-center border border-slate-600">
-            <div class="text-sm text-slate-400 mb-1">Slot 6</div>
-            <div class="font-bold">Free</div>
+        <h3 class="text-xl font-bold mb-4">Queued Keys</h3>
+        <div id="queued-keys" class="space-y-2">
+          <div class="alert alert-info bg-slate-800/50 border-slate-600">
+            No queued keys
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Your status -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-      <div class="card bg-slate-900/70 border border-slate-700 shadow-2xl">
-        <div class="card-body text-center">
-          <h3 class="text-xl font-bold mb-4">Your Remaining Time</h3>
-          <div class="text-5xl font-black" id="time-left">00:00:00</div>
-        </div>
-      </div>
-
-      <div class="card bg-slate-900/70 border border-slate-700 shadow-2xl">
-        <div class="card-body">
-          <h3 class="text-xl font-bold mb-4">Queued Keys</h3>
-          <div id="queued-keys" class="space-y-2 text-sm">
-            <div class="alert alert-info bg-slate-800/50 border-slate-600">
-              No queued keys
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Buy -->
     <div class="card bg-slate-900/70 border border-slate-700 shadow-2xl">
       <div class="card-body">
         <h3 class="text-2xl font-bold mb-6 text-center">Buy More Time</h3>
-        <p class="text-center text-slate-400 mb-8">4 € = 1 hour</p>
+        <p class="text-center text-slate-400 mb-8">4 € = 1 hour – next key activates after current expires</p>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div class="card bg-slate-800/70 border border-slate-600 shadow-xl">
@@ -145,13 +104,12 @@
       </div>
     </div>
 
-    <!-- Admin Panel -->
     <div id="admin-panel" class="hidden card bg-red-950/40 border border-red-700/50 shadow-2xl">
       <div class="card-body">
         <h3 class="text-3xl text-red-400 mb-6">Admin Panel</h3>
 
         <div class="mb-8">
-          <h4 class="text-xl text-amber-400 mb-3">Upload Keys</h4>
+          <h4 class="text-xl text-amber-400 mb-3">Upload Keys to Pool</h4>
           <textarea id="admin-keys" class="textarea textarea-bordered w-full h-32 font-mono bg-black/60 text-white" placeholder="One key per line"></textarea>
           <button onclick="uploadKeys()" class="btn btn-error w-full mt-4">
             Upload
@@ -159,26 +117,25 @@
         </div>
 
         <div>
-          <h4 class="text-xl text-amber-400 mb-3">Give Myself Keys</h4>
+          <h4 class="text-xl text-amber-400 mb-3">Give Myself Hours</h4>
           <div class="flex gap-4">
             <input id="admin-self-count" type="number" min="1" value="5" class="input input-bordered w-32 bg-black/60 text-white" />
             <button onclick="giveSelfKeys()" class="btn btn-success flex-1">
-              Give Keys
+              Give
             </button>
           </div>
         </div>
       </div>
     </div>
-  </main>
+  </div>
 
   <script>
     const CLIENT_ID = "1477548522713911448";
-    const REDIRECT_URI = "https://trulysfinder.onrender.com/"; // ← CHANGE TO YOUR ACTUAL RENDER URL
+    const REDIRECT_URI = "https://trulysfinder.onrender.com/"; // YOUR REAL URL
     const ADMIN_ID = "1049068212182073344";
 
     let currentUserId = null;
 
-    // Login
     function discordLogin() {
       const state = Math.random().toString(36).substring(2);
       localStorage.setItem("dc_state", state);
@@ -230,12 +187,6 @@
     async function updateStatus() {
       if (!currentUserId) return;
 
-      const timeEl = document.getElementById("time-left");
-      const queuedEl = document.getElementById("queued-keys");
-
-      timeEl.textContent = "Loading...";
-      queuedEl.innerHTML = '<div class="alert alert-info bg-slate-800/50 border-slate-600">Loading...</div>';
-
       try {
         const res = await fetch('/api/manage-keys', {
           method: 'POST',
@@ -247,20 +198,19 @@
 
         const data = await res.json();
 
-        // Time left
-        timeEl.textContent = formatTime(data.timeLeftSeconds || 0);
+        document.getElementById("time-left").textContent = formatTime(data.timeLeftSeconds || 0);
 
-        // Queued
-        if (data.queuePosition) {
-          queuedEl.innerHTML = `Queue position: ${data.queuePosition} (total waiting: ${data.queueLength})`;
+        const queuedEl = document.getElementById("queued-keys");
+        if (data.queuedHours > 0) {
+          queuedEl.innerHTML = `${data.queuedHours} hours queued (position ${data.queuePosition || 'N/A'} of ${data.queueLength})`;
         } else {
-          queuedEl.innerHTML = 'No queued keys';
+          queuedEl.innerHTML = 'No queued hours';
         }
 
       } catch (err) {
-        console.error("Status fetch failed:", err);
-        timeEl.textContent = 'Error loading time';
-        queuedEl.innerHTML = '<div class="alert alert-error">Failed to load status</div>';
+        console.error("Update failed:", err);
+        document.getElementById("time-left").textContent = 'Error';
+        document.getElementById("queued-keys").innerHTML = 'Error loading queue';
       }
     }
 
@@ -288,7 +238,7 @@
         });
 
         const data = await res.json();
-        alert(data.message || "Keys uploaded");
+        alert(data.message);
         document.getElementById("admin-keys").value = "";
       } catch (err) {
         alert("Upload failed: " + err.message);
@@ -299,7 +249,7 @@
       if (currentUserId !== ADMIN_ID) return alert("Not admin");
 
       const amount = parseInt(document.getElementById("admin-self-count").value);
-      if (!amount || amount < 1) return alert("Enter a valid number");
+      if (!amount || amount < 1) return alert("Enter a number");
 
       try {
         const res = await fetch('/api/manage-keys', {
@@ -316,7 +266,6 @@
       }
     }
 
-    // PayPal
     function initPaypal() {
       const packs = [
         { id: "paypal-1", price: "4.00", hours: 1 },
@@ -341,7 +290,7 @@
               });
 
               const result = await res.json();
-              alert(result.message || `Queued ${p.hours} hours`);
+              alert(result.message || `Started with 1 hour, queued ${result.queued || 0} more`);
               updateStatus();
             } catch (err) {
               alert("Queue failed: " + err.message);
@@ -355,7 +304,7 @@
     window.onload = () => {
       handleCallback();
       initPaypal();
-      setInterval(updateStatus, 30000); // refresh every 30s
+      setInterval(updateStatus, 30000);
     };
   </script>
 </body>
