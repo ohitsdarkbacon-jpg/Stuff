@@ -29,15 +29,9 @@
       color: var(--text);
       min-height: 100vh;
     }
-    .glow {
-      box-shadow: 0 0 25px rgba(16, 185, 129, 0.25);
-    }
-    .glow-sm {
-      box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
-    }
-    .neon-text {
-      text-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent);
-    }
+    .glow { box-shadow: 0 0 25px rgba(16, 185, 129, 0.25); }
+    .glow-sm { box-shadow: 0 0 15px rgba(16, 185, 129, 0.15); }
+    .neon-text { text-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent); }
     .slot-occupied {
       background: rgba(16, 185, 129, 0.15);
       border-color: var(--accent);
@@ -93,7 +87,7 @@
         </h2>
       </div>
 
-      <!-- 6 Slots Grid -->
+      <!-- 6 Slots -->
       <div class="card bg-slate-900/60 border border-slate-700 shadow-2xl">
         <div class="card-body">
           <h3 class="card-title text-2xl mb-6 text-center">Live Slots (6 max)</h3>
@@ -189,11 +183,27 @@
       <!-- Admin Panel -->
       <div id="admin-panel" class="hidden card bg-red-950/40 border border-red-700/50 shadow-2xl">
         <div class="card-body">
-          <h3 class="card-title text-3xl text-red-400 mb-6">Admin – Upload Keys</h3>
-          <textarea id="admin-keys" class="textarea textarea-bordered textarea-lg w-full h-40 font-mono bg-black/60 text-white" placeholder="Paste keys here – one per line"></textarea>
-          <button onclick="uploadKeys()" class="btn btn-error btn-lg w-full mt-4">
-            <i class="fas fa-upload mr-2"></i> Upload Keys
-          </button>
+          <h3 class="card-title text-3xl text-red-400 mb-6">Admin Controls</h3>
+
+          <!-- Upload Keys -->
+          <div class="mb-10">
+            <h4 class="text-xl font-semibold text-amber-400 mb-4">Upload New Keys</h4>
+            <textarea id="admin-keys" class="textarea textarea-bordered textarea-lg w-full h-40 font-mono bg-black/60 text-white" placeholder="Paste keys here – one per line"></textarea>
+            <button onclick="uploadKeys()" class="btn btn-error btn-lg w-full mt-4">
+              <i class="fas fa-upload mr-2"></i> Upload Keys
+            </button>
+          </div>
+
+          <!-- Give Myself Keys -->
+          <div>
+            <h4 class="text-xl font-semibold text-amber-400 mb-4">Give Myself Keys</h4>
+            <div class="flex gap-4">
+              <input id="admin-self-keys" type="number" min="1" value="5" class="input input-bordered w-32 bg-black/60 text-white" placeholder="Number of keys" />
+              <button onclick="giveSelfKeys()" class="btn btn-success flex-1">
+                <i class="fas fa-gift mr-2"></i> Give Myself Keys
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -207,7 +217,7 @@
 
     let currentUserId = null;
 
-    // Login
+    // Discord Login
     function discordLogin() {
       const state = Math.random().toString(36).substring(2);
       localStorage.setItem("dc_state", state);
@@ -250,56 +260,70 @@
           window.history.replaceState({}, "", window.location.pathname);
         })
         .catch(err => {
-          console.error(err);
-          alert("Login failed. Please try again or check your redirect URI in Discord developer portal.");
+          console.error("Login failed:", err);
+          alert("Login failed. Please try again or check redirect URI.");
         });
       }
     }
 
-    // Slot & key status (update this with your real backend call)
-async function updateSlotStatus() {
-  if (!currentUserId) return;
+    // Placeholder slot status (replace with real backend fetch)
+    async function updateSlotStatus() {
+      // Fake data for demo
+      document.getElementById("time-left").textContent = "00:15:42";
 
-  try {
-    const response = await fetch('/api/manage-keys', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'get_status', discordId: currentUserId })
-    });
+      // Demo occupied slots
+      document.getElementById("slot-1").classList.add("slot-occupied");
+      document.getElementById("slot-1").innerHTML = `<div class="text-sm text-slate-400 mb-1">Slot 1</div><div class="font-bold">User123</div><div class="text-xs text-emerald-400">12 min left</div>`;
 
-    if (!response.ok) throw new Error('Backend error');
-
-    const data = await response.json();
-
-    // Update time left
-    const timeEl = document.getElementById('time-left');
-    if (data.timeLeftSeconds > 0) {
-      const totalSeconds = data.timeLeftSeconds;
-      const hours = Math.floor(totalSeconds / 3600);
-      const minutes = Math.floor((totalSeconds % 3600) / 60);
-      const seconds = totalSeconds % 60;
-      timeEl.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-      timeEl.classList.add('text-emerald-400');
-    } else {
-      timeEl.textContent = 'No active slot';
-      timeEl.classList.remove('text-emerald-400');
+      document.getElementById("slot-4").classList.add("slot-occupied");
+      document.getElementById("slot-4").innerHTML = `<div class="text-sm text-slate-400 mb-1">Slot 4</div><div class="font-bold">GamerX</div><div class="text-xs text-emerald-400">38 min left</div>`;
     }
 
-    // Update queued keys
-    const queuedEl = document.getElementById('queued-keys');
-    if (data.queuedKeys?.length > 0) {
-      queuedEl.innerHTML = data.queuedKeys.map(key => 
-        `<div class="bg-zinc-900/70 p-4 rounded-lg font-mono break-all">${key}</div>`
-      ).join('');
-    } else {
-      queuedEl.innerHTML = '<div class="alert alert-info bg-slate-800/50 border-slate-600">No queued keys</div>';
+    // Admin: Upload keys
+    async function uploadKeys() {
+      alert("Admin key upload – connect to backend");
     }
 
-  } catch (err) {
-    console.error('Failed to fetch slot status:', err);
-    document.getElementById('time-left').textContent = 'Error loading status';
-  }
-}
+    // Admin: Give myself any number of keys
+    async function giveSelfKeys() {
+      if (!currentUserId || currentUserId !== ADMIN_ID) {
+        alert("Only admin can use this");
+        return;
+      }
+
+      const amount = parseInt(document.getElementById("admin-self-keys").value);
+      if (!amount || amount < 1) {
+        alert("Enter a valid number of keys");
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/manage-keys', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'assign_multiple',
+            discordId: currentUserId,
+            count: amount
+          })
+        });
+
+        if (res.ok) {
+          alert(`Successfully gave yourself ${amount} key(s)! Check your queued keys.`);
+          updateSlotStatus();
+        } else {
+          alert("Failed to assign keys – check backend.");
+        }
+      } catch (err) {
+        alert("Error: " + err.message);
+      }
+    }
+
+    // PayPal init (basic)
+    function initPaypal() {
+      console.log("PayPal ready – add rendering logic here if needed");
+    }
+
     // Init
     window.onload = () => {
       handleDiscordCallback();
@@ -308,4 +332,5 @@ async function updateSlotStatus() {
   </script>
 </body>
 </html>
+
 
