@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Truly's Autojoiner • Roblox Auto Join Service</title>
 
   <!-- Tailwind + daisyUI -->
@@ -140,7 +140,7 @@
   <script>
     // CONFIG
     const CLIENT_ID = "1477548522713911448";
-    const REDIRECT_URI = "https://stuff-2eft.onrender.com/"; // ← Your Render URL (NO trailing slash!)
+    const REDIRECT_URI = "https://stuff-2eft.onrender.com/"; // NO trailing slash!
     const ADMIN_ID = "1049068212182073344";
 
     let currentUserId = null;
@@ -163,33 +163,41 @@
 
     // Login with PKCE
     async function discordLogin() {
-      pkceCodeVerifier = base64URLEncode(crypto.getRandomValues(new Uint8Array(32)).join(''));
-      const codeChallenge = base64URLEncode(await sha256(pkceCodeVerifier));
+      try {
+        pkceCodeVerifier = base64URLEncode(crypto.getRandomValues(new Uint8Array(32)).join(''));
+        const codeChallenge = base64URLEncode(await sha256(pkceCodeVerifier));
 
-      const state = Math.random().toString(36).substring(2);
-      localStorage.setItem("dc_state", state);
-      localStorage.setItem("pkce_verifier", pkceCodeVerifier);
+        const state = Math.random().toString(36).substring(2);
+        localStorage.setItem("dc_state", state);
+        localStorage.setItem("pkce_verifier", pkceCodeVerifier);
 
-      const params = new URLSearchParams({
-        client_id: CLIENT_ID,
-        redirect_uri: REDIRECT_URI,
-        response_type: "code",
-        scope: "identify",
-        state: state,
-        code_challenge: codeChallenge,
-        code_challenge_method: "S256"
-      });
+        const params = new URLSearchParams({
+          client_id: CLIENT_ID,
+          redirect_uri: REDIRECT_URI,
+          response_type: "code",
+          scope: "identify",
+          state: state,
+          code_challenge: codeChallenge,
+          code_challenge_method: "S256"
+        });
 
-      window.location.href = `https://discord.com/oauth2/authorize?${params}`;
+        window.location.href = `https://discord.com/oauth2/authorize?${params}`;
+      } catch (err) {
+        console.error("Login error:", err);
+        alert("Failed to start login: " + err.message);
+      }
     }
 
-    // Handle redirect back (code flow)
+    // Handle redirect back
     async function handleDiscordCallback() {
       const params = new URLSearchParams(window.location.search);
       const code = params.get("code");
       const state = params.get("state");
 
-      if (!code || state !== localStorage.getItem("dc_state")) return;
+      if (!code || state !== localStorage.getItem("dc_state")) {
+        console.log("No code or state mismatch");
+        return;
+      }
 
       pkceCodeVerifier = localStorage.getItem("pkce_verifier");
 
@@ -206,12 +214,19 @@
           })
         });
 
+        if (!tokenRes.ok) {
+          const err = await tokenRes.json();
+          throw new Error(err.error_description || "Token exchange failed");
+        }
+
         const tokenData = await tokenRes.json();
-        if (tokenData.error) throw new Error(tokenData.error_description);
 
         const userRes = await fetch("https://discord.com/api/users/@me", {
           headers: { Authorization: `Bearer ${tokenData.access_token}` }
         });
+
+        if (!userRes.ok) throw new Error("Failed to fetch user");
+
         const user = await userRes.json();
 
         currentUserId = user.id;
@@ -226,21 +241,34 @@
         updateSlotStatus();
         window.history.replaceState({}, "", window.location.pathname);
       } catch (err) {
+        console.error("Login failed:", err);
         alert("Login failed: " + err.message);
       }
     }
 
-    // Rest of your script (updateSlotStatus, uploadKeys, PayPal init, etc.) remains the same
-    // ... (copy from your previous version)
+    // Placeholder for slot status (update with your real backend)
+    async function updateSlotStatus() {
+      document.getElementById("time-left").textContent = "00:00:00";
+      // Add real fetch to /api/manage-keys here when backend is ready
+    }
 
+    // Admin upload (placeholder)
+    async function uploadKeys() {
+      alert("Admin upload would go here (connect to backend)");
+    }
+
+    // PayPal init (placeholder - add your packs)
+    function initPaypal() {
+      // Add your PayPal button rendering logic here
+      console.log("PayPal initialized");
+    }
+
+    // Init
     window.onload = () => {
       handleDiscordCallback();
-      initPaypal(); // your PayPal function
+      initPaypal();
     };
   </script>
 </body>
 </html>
-
-
-
 
