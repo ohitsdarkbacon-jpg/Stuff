@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,11 +12,7 @@
   <script src="https://www.paypal.com/sdk/js?client-id=AZFXwnf32b8gYaBWN0GEcAl_qKRPewK223MTCzOlh1SWyJ3LBFYJnNAbvQKYvh0Pfx0e1l-1y-LaySWs&currency=EUR&components=buttons"></script>
 
   <style>
-    body {
-      background: #0a0e17;
-      color: #e2e8f0;
-      min-height: 100vh;
-    }
+    body { background: #0a0e17; color: #e2e8f0; min-height: 100vh; }
     .glow { box-shadow: 0 0 20px rgba(16,185,129,0.3); }
     .neon { text-shadow: 0 0 10px #10b981; }
     .slot-occupied { background: rgba(16,185,129,0.15); border-color: #10b981; }
@@ -29,7 +25,7 @@
   <nav class="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-lg border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
       <h1 class="text-2xl font-bold neon">TRULY'S AUTOJOINER</h1>
-      <button id="login-btn" onclick="discordLogin()" class="btn bg-emerald-600 hover:bg-emerald-700 text-white gap-2">
+      <button onclick="discordLogin()" class="btn bg-emerald-600 hover:bg-emerald-700 text-white gap-2">
         <i class="fab fa-discord"></i> Login
       </button>
     </div>
@@ -50,14 +46,13 @@
   <!-- Dashboard -->
   <div id="dashboard" class="hidden pt-24 pb-20 px-6 max-w-6xl mx-auto space-y-12">
 
-    <!-- Welcome -->
     <div class="text-center">
       <h2 class="text-4xl font-bold mb-2">
         Welcome back, <span id="username" class="text-emerald-400">@...</span>
       </h2>
     </div>
 
-    <!-- 6 Slots -->
+    <!-- Slots -->
     <div class="card bg-slate-900/70 border border-slate-700 shadow-2xl">
       <div class="card-body">
         <h3 class="text-2xl font-bold mb-6 text-center">Live Slots (max 6)</h3>
@@ -178,7 +173,7 @@
 
   <script>
     const CLIENT_ID = "1477548522713911448";
-    const REDIRECT_URI = "https://stuff-2eft.onrender.com/"; // CHANGE TO YOUR REAL RENDER URL (NO TRAILING SLASH!)
+    const REDIRECT_URI = "https://stuff-2eft.onrender.com/"; // ← CHANGE TO YOUR ACTUAL RENDER URL
     const ADMIN_ID = "1049068212182073344";
 
     let currentUserId = null;
@@ -222,7 +217,7 @@
             document.getElementById("admin-panel").style.display = "block";
           }
 
-          updateUI();
+          updateStatus();
           window.history.replaceState({}, "", window.location.pathname);
         })
         .catch(err => {
@@ -232,45 +227,40 @@
       }
     }
 
-    // In-memory state (demo - reset on refresh)
-    let queuedKeys = [];
-    let activeExpiry = null;
+    async function updateStatus() {
+      if (!currentUserId) return;
 
-    function updateUI() {
-      // Time left
       const timeEl = document.getElementById("time-left");
-      if (activeExpiry) {
-        const remaining = Math.max(0, Math.floor((new Date(activeExpiry) - Date.now()) / 1000));
-        timeEl.textContent = formatTime(remaining);
-        if (remaining <= 0) activeExpiry = null;
-      } else {
-        timeEl.textContent = "00:00:00";
-      }
-
-      // Queued keys
       const queuedEl = document.getElementById("queued-keys");
-      if (queuedKeys.length > 0) {
-        queuedEl.innerHTML = queuedKeys.map(key => 
-          `<div class="bg-slate-800 p-3 rounded font-mono break-all text-sm">${key}</div>`
-        ).join('');
-      } else {
-        queuedEl.innerHTML = '<div class="alert alert-info bg-slate-800/50 border-slate-600">No queued keys</div>';
-      }
 
-      // Slots (demo - shows you in slot 1 if active)
-      for (let i = 1; i <= 6; i++) {
-        const slot = document.getElementById(`slot-${i}`);
-        if (i === 1 && activeExpiry) {
-          slot.classList.add("slot-occupied");
-          slot.innerHTML = `
-            <div class="text-sm text-slate-400 mb-1">Slot ${i}</div>
-            <div class="font-bold">${document.getElementById("username").textContent}</div>
-            <div class="text-xs text-emerald-400">${timeEl.textContent} left</div>
-          `;
+      timeEl.textContent = "Loading...";
+      queuedEl.innerHTML = '<div class="alert alert-info bg-slate-800/50 border-slate-600">Loading...</div>';
+
+      try {
+        const res = await fetch('/api/manage-keys', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'status', discordId: currentUserId })
+        });
+
+        if (!res.ok) throw new Error(`Backend status: ${res.status}`);
+
+        const data = await res.json();
+
+        // Time left
+        timeEl.textContent = formatTime(data.timeLeftSeconds || 0);
+
+        // Queued
+        if (data.queuePosition) {
+          queuedEl.innerHTML = `Queue position: ${data.queuePosition} (total waiting: ${data.queueLength})`;
         } else {
-          slot.classList.remove("slot-occupied");
-          slot.innerHTML = `<div class="text-sm text-slate-400 mb-1">Slot ${i}</div><div class="font-bold">Free</div>`;
+          queuedEl.innerHTML = 'No queued keys';
         }
+
+      } catch (err) {
+        console.error("Status fetch failed:", err);
+        timeEl.textContent = 'Error loading time';
+        queuedEl.innerHTML = '<div class="alert alert-error">Failed to load status</div>';
       }
     }
 
@@ -282,42 +272,57 @@
       return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
     }
 
-    // Admin upload keys
-    function uploadKeys() {
+    async function uploadKeys() {
       if (currentUserId !== ADMIN_ID) return alert("Not admin");
 
       const text = document.getElementById("admin-keys").value.trim();
       if (!text) return alert("Enter keys");
 
-      const newKeys = text.split('\n').map(k => k.trim()).filter(Boolean);
-      queuedKeys.push(...newKeys);
-      updateUI();
+      const keysArray = text.split('\n').map(k => k.trim()).filter(Boolean);
 
-      document.getElementById("admin-keys").value = "";
-      alert(`Added ${newKeys.length} key(s)`);
+      try {
+        const res = await fetch('/api/manage-keys', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'upload', discordId: ADMIN_ID, keys: keysArray })
+        });
+
+        const data = await res.json();
+        alert(data.message || "Keys uploaded");
+        document.getElementById("admin-keys").value = "";
+      } catch (err) {
+        alert("Upload failed: " + err.message);
+      }
     }
 
-    // Admin give self keys
-    function giveSelfKeys() {
+    async function giveSelfKeys() {
       if (currentUserId !== ADMIN_ID) return alert("Not admin");
 
-      const count = parseInt(document.getElementById("admin-self-count").value);
-      if (!count || count < 1) return alert("Enter a number");
+      const amount = parseInt(document.getElementById("admin-self-count").value);
+      if (!amount || amount < 1) return alert("Enter a valid number");
 
-      const fakeKeys = Array(count).fill().map((_, i) => `TEST-KEY-${Date.now()}-${i}`);
-      queuedKeys.push(...fakeKeys);
-      updateUI();
+      try {
+        const res = await fetch('/api/manage-keys', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'give-self', discordId: ADMIN_ID, amount })
+        });
 
-      alert(`Added ${count} test key(s) to queue`);
+        const data = await res.json();
+        alert(data.message || `Queued ${amount} hours`);
+        updateStatus();
+      } catch (err) {
+        alert("Failed: " + err.message);
+      }
     }
 
-    // PayPal buttons
+    // PayPal
     function initPaypal() {
       const packs = [
-        { id: "paypal-1", price: "4.00", keys: 1 },
-        { id: "paypal-3", price: "12.00", keys: 3 },
-        { id: "paypal-10", price: "40.00", keys: 10 },
-        { id: "paypal-25", price: "100.00", keys: 25 }
+        { id: "paypal-1", price: "4.00", hours: 1 },
+        { id: "paypal-3", price: "12.00", hours: 3 },
+        { id: "paypal-10", price: "40.00", hours: 10 },
+        { id: "paypal-25", price: "100.00", hours: 25 }
       ];
 
       packs.forEach(p => {
@@ -328,10 +333,19 @@
           }),
           onApprove: async (data, actions) => {
             await actions.order.capture();
-            const newKeys = Array(p.keys).fill().map((_, i) => `PURCHASED-KEY-${Date.now()}-${i}`);
-            queuedKeys.push(...newKeys);
-            updateUI();
-            alert(`Success! ${p.keys} hour(s) added to queue.`);
+            try {
+              const res = await fetch('/api/manage-keys', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'buy', discordId: currentUserId, amount: p.hours })
+              });
+
+              const result = await res.json();
+              alert(result.message || `Queued ${p.hours} hours`);
+              updateStatus();
+            } catch (err) {
+              alert("Queue failed: " + err.message);
+            }
           },
           onError: () => alert("Payment failed.")
         }).render(`#${p.id}`);
@@ -341,11 +355,12 @@
     window.onload = () => {
       handleCallback();
       initPaypal();
-      setInterval(updateUI, 1000); // Live countdown
+      setInterval(updateStatus, 30000); // refresh every 30s
     };
   </script>
 </body>
 </html>
+
 
 
 
