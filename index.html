@@ -1,42 +1,30 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Truly's Autojoiner</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Truly's Autojoiner • Roblox Auto Join Service</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"/>
 
-  <!-- PayPal SDK -->
   <script src="https://www.paypal.com/sdk/js?client-id=AZFXwnf32b8gYaBWN0GEcAl_qKRPewK223MTCzOlh1SWyJ3LBFYJnNAbvQKYvh0Pfx0e1l-1y-LaySWs&currency=EUR&components=buttons"></script>
 
   <style>
-    body {
-      background: #0a0e17;
-      color: #e2e8f0;
-      min-height: 100vh;
-    }
+    body { background: #0a0e17; color: #e2e8f0; }
     .glow { box-shadow: 0 0 20px rgba(16,185,129,0.3); }
     .neon { text-shadow: 0 0 10px #10b981; }
-    .slot-occupied {
-      background: rgba(16,185,129,0.15);
-      border-color: #10b981;
-    }
-    .slot-free {
-      background: rgba(30,41,59,0.5);
-      border-color: #334155;
-    }
+    .slot-occupied { background: rgba(16,185,129,0.15); border-color: #10b981; }
+    .slot-free { background: rgba(30,41,59,0.5); border-color: #334155; }
   </style>
 </head>
 <body>
 
-  <!-- Navbar -->
   <nav class="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-lg border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
       <h1 class="text-2xl font-bold neon">TRULY'S AUTOJOINER</h1>
-      <button id="login-btn" onclick="discordLogin()" class="btn bg-emerald-600 hover:bg-emerald-700 text-white gap-2">
+      <button onclick="discordLogin()" class="btn bg-emerald-600 hover:bg-emerald-700 text-white gap-2">
         <i class="fab fa-discord"></i> Login
       </button>
     </div>
@@ -45,7 +33,7 @@
   <!-- Login screen -->
   <div id="login-screen" class="min-h-screen flex flex-col items-center justify-center text-center px-6">
     <h2 class="text-5xl md:text-7xl font-black neon mb-6">Truly's Autojoiner</h2>
-    <p class="text-xl md:text-2xl text-slate-300 mb-12 max-w-2xl">
+    <p class="text-xl md:text-2xl text-slate-300 mb-12 max-w-3xl">
       Private Roblox server joining • 4 € = 1 hour<br/>
       Max 6 users active at once • Keys queue automatically
     </p>
@@ -54,10 +42,9 @@
     </button>
   </div>
 
-  <!-- Dashboard (hidden until login) -->
+  <!-- Dashboard -->
   <div id="dashboard" class="hidden pt-24 pb-20 px-6 max-w-6xl mx-auto space-y-12">
 
-    <!-- Welcome -->
     <div class="text-center">
       <h2 class="text-4xl font-bold mb-2">
         Welcome back, <span id="username" class="text-emerald-400">@...</span>
@@ -97,7 +84,7 @@
       </div>
     </div>
 
-    <!-- Your time & queued -->
+    <!-- Your status -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
       <div class="card bg-slate-900/70 border border-slate-700 shadow-2xl">
         <div class="card-body text-center">
@@ -111,7 +98,7 @@
           <h3 class="text-xl font-bold mb-4">Queued Keys</h3>
           <div id="queued-keys" class="space-y-2 text-sm">
             <div class="alert alert-info bg-slate-800/50 border-slate-600">
-              No queued keys
+              Loading queued keys...
             </div>
           </div>
         </div>
@@ -190,7 +177,6 @@
 
     let currentUserId = null;
 
-    // Login
     function discordLogin() {
       const state = Math.random().toString(36).substring(2);
       localStorage.setItem("dc_state", state);
@@ -206,7 +192,6 @@
       window.location.href = `https://discord.com/oauth2/authorize?${params}`;
     }
 
-    // Handle callback
     function handleCallback() {
       const hash = window.location.hash.substring(1);
       if (!hash) return;
@@ -240,7 +225,6 @@
       }
     }
 
-    // Real backend calls
     async function updateStatus() {
       if (!currentUserId) return;
 
@@ -257,14 +241,19 @@
 
         document.getElementById("time-left").textContent = formatTime(data.timeLeftSeconds || 0);
 
-        const queued = document.getElementById("queued-keys");
-        queued.innerHTML = data.queuedKeys > 0 
-          ? `${data.queuedKeys} keys queued`
-          : 'No queued keys';
+        const queuedEl = document.getElementById("queued-keys");
+        if (data.queuedKeys && data.queuedKeys.length > 0) {
+          queuedEl.innerHTML = data.queuedKeys.map(key => 
+            `<div class="bg-slate-800 p-3 rounded font-mono break-all text-sm">${key}</div>`
+          ).join('');
+        } else {
+          queuedEl.innerHTML = '<div class="alert alert-info bg-slate-800/50 border-slate-600">No queued keys</div>';
+        }
 
       } catch (err) {
-        console.error(err);
+        console.error('Status update failed:', err);
         document.getElementById("time-left").textContent = 'Error loading';
+        document.getElementById("queued-keys").innerHTML = '<div class="alert alert-error">Failed to load queued keys</div>';
       }
     }
 
@@ -294,6 +283,7 @@
 
       document.getElementById("admin-keys").value = "";
       alert("Keys uploaded");
+      updateStatus();
     }
 
     async function giveSelfKeys() {
@@ -302,17 +292,23 @@
       const count = parseInt(document.getElementById("admin-self-count").value);
       if (!count || count < 1) return alert("Enter a number");
 
-      await fetch('/api/manage-keys', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'assign_multiple', discordId: currentUserId, count })
-      });
+      try {
+        const res = await fetch('/api/manage-keys', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'assign_multiple', discordId: currentUserId, count })
+        });
 
-      alert(`Assigned ${count} keys`);
-      updateStatus();
+        if (!res.ok) throw new Error('Backend error');
+
+        alert(`Assigned ${count} keys to yourself`);
+        updateStatus();
+      } catch (err) {
+        alert("Failed to assign keys: " + err.message);
+      }
     }
 
-    // PayPal
+    // PayPal buttons
     function initPaypal() {
       const packs = [
         { id: "paypal-1", price: "4.00", keys: 1 },
@@ -329,13 +325,17 @@
           }),
           onApprove: async (data, actions) => {
             await actions.order.capture();
-            await fetch('/api/manage-keys', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ action: 'assign_multiple', discordId: currentUserId, count: p.keys })
-            });
-            alert(`Success! ${p.keys} hour(s) queued.`);
-            updateStatus();
+            try {
+              await fetch('/api/manage-keys', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'assign_multiple', discordId: currentUserId, count: p.keys })
+              });
+              alert(`Success! ${p.keys} hour(s) queued.`);
+              updateStatus();
+            } catch (err) {
+              alert("Failed to queue keys: " + err.message);
+            }
           },
           onError: () => alert("Payment failed.")
         }).render(`#${p.id}`);
@@ -349,4 +349,5 @@
   </script>
 </body>
 </html>
+
 
