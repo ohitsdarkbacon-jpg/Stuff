@@ -2,6 +2,7 @@
 
 <html lang="en">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -11,6 +12,8 @@
 
 <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"/>
+
+<script src="https://www.paypal.com/sdk/js?client-id=AZFXwnf32b8gYaBWN0GEcAl_qKRPewK223MTCzOlh1SWyJ3LBFYJnNAbvQKYvh0Pfx0e1l-1y-LaySWs&currency=EUR&components=buttons"></script>
 
 <style>
 body{background:#0a0e17;color:#e2e8f0}
@@ -22,11 +25,13 @@ body{background:#0a0e17;color:#e2e8f0}
 
 <nav class="fixed top-0 w-full bg-black/80 border-b border-slate-800 backdrop-blur-lg">
 <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+
 <h1 class="text-2xl font-bold neon">TRULY'S AUTOJOINER</h1>
 
 <button onclick="discordLogin()" class="btn bg-emerald-600 text-white gap-2">
 <i class="fab fa-discord"></i> Login
 </button>
+
 </div>
 </nav>
 
@@ -46,10 +51,10 @@ Login with Discord
 
 </div>
 
-<div id="dashboard" class="hidden pt-24 pb-20 px-6 max-w-5xl mx-auto space-y-10">
+<div id="dashboard" class="hidden pt-24 pb-20 px-6 max-w-6xl mx-auto space-y-10">
 
 <h2 class="text-4xl text-center font-bold">
-Welcome back <span id="username" class="text-emerald-400"></span>
+Welcome <span id="username" class="text-emerald-400"></span>
 </h2>
 
 <div class="card bg-slate-900 border border-slate-700">
@@ -67,13 +72,21 @@ Welcome back <span id="username" class="text-emerald-400"></span>
 </div>
 
 <div class="card bg-slate-900 border border-slate-700">
+<div class="card-body">
+
+<h3 class="text-xl font-bold mb-4">Active Users</h3>
+
+<div id="slot-list" class="space-y-2 text-sm"></div>
+
+</div>
+</div>
+
+<div class="card bg-slate-900 border border-slate-700">
 <div class="card-body text-center">
 
-<h3 class="text-xl font-bold">Active Time</h3>
+<h3 class="text-xl font-bold">Your Active Time</h3>
 
-<div id="time-left" class="text-5xl font-black">
-00:00:00
-</div>
+<div id="time-left" class="text-5xl font-black">00:00:00</div>
 
 <div class="text-slate-400 mt-2">
 Active Key: <span id="active-key">None</span>
@@ -87,11 +100,41 @@ Active Key: <span id="active-key">None</span>
 
 <h3 class="text-xl font-bold">Queued Hours</h3>
 
-<div id="queued-hours" class="text-4xl font-black text-amber-400">
-0
-</div>
+<div id="queued-hours" class="text-4xl font-black text-amber-400">0</div>
 
 <div id="queue-position" class="text-slate-400"></div>
+
+</div>
+</div>
+
+<div class="card bg-slate-900 border border-slate-700">
+<div class="card-body">
+
+<h3 class="text-2xl text-center font-bold mb-6">Buy Time</h3>
+
+<div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+
+<div>
+<div class="text-center mb-2 font-bold">1 Hour</div>
+<div id="paypal1"></div>
+</div>
+
+<div>
+<div class="text-center mb-2 font-bold">3 Hours</div>
+<div id="paypal3"></div>
+</div>
+
+<div>
+<div class="text-center mb-2 font-bold">10 Hours</div>
+<div id="paypal10"></div>
+</div>
+
+<div>
+<div class="text-center mb-2 font-bold">25 Hours</div>
+<div id="paypal25"></div>
+</div>
+
+</div>
 
 </div>
 </div>
@@ -162,8 +205,6 @@ const params=new URLSearchParams(hash)
 
 const token=params.get("access_token")
 
-if(!token)return
-
 fetch("https://discord.com/api/users/@me",{
 headers:{Authorization:`Bearer ${token}`}
 })
@@ -181,6 +222,8 @@ if(user.id===ADMIN_ID){
 document.getElementById("admin-panel").style.display="block"
 }
 
+initPaypal()
+
 updateStatus()
 
 })
@@ -191,11 +234,10 @@ updateStatus()
 
 function formatTime(sec){
 
-let h=Math.floor(sec/3600)
-let m=Math.floor((sec%3600)/60)
+let m=Math.floor(sec/60)
 let s=sec%60
 
-return `${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}:${s.toString().padStart(2,"0")}`
+return `${m}:${s.toString().padStart(2,"0")}`
 
 }
 
@@ -232,22 +274,69 @@ body:JSON.stringify({action:"status",discordId:currentUserId})
 const data=await res.json()
 
 document.getElementById("slots-used").textContent=data.activeCount
-
-document.getElementById("slot-message").textContent=
-data.activeCount>=6?"All slots full":"Slots available"
+document.getElementById("slot-message").textContent=data.activeCount>=6?"Full":"Available"
 
 document.getElementById("active-key").textContent=data.activeKey||"None"
 
 document.getElementById("queued-hours").textContent=data.queuedHours
 
-if(data.queuePosition){
-document.getElementById("queue-position").textContent=
-`Waiting for slot — position ${data.queuePosition} / ${data.queueLength}`
-}else{
-document.getElementById("queue-position").textContent=""
+expiryTimestamp=data.expiry
+
+const list=document.getElementById("slot-list")
+list.innerHTML=""
+
+data.activeUsers.forEach((u,i)=>{
+
+const el=document.createElement("div")
+
+el.textContent=`${i+1}. ${u.name} — ${Math.floor((u.expiry-Date.now())/60000)}m left`
+
+list.appendChild(el)
+
+})
+
 }
 
-expiryTimestamp=data.expiry
+
+
+function initPaypal(){
+
+const packs=[
+{id:"paypal1",price:"4",hours:1},
+{id:"paypal3",price:"12",hours:3},
+{id:"paypal10",price:"40",hours:10},
+{id:"paypal25",price:"100",hours:25}
+]
+
+packs.forEach(p=>{
+
+paypal.Buttons({
+
+createOrder:(d,a)=>a.order.create({
+purchase_units:[{amount:{value:p.price}}]
+}),
+
+onApprove:async(d,a)=>{
+
+await a.order.capture()
+
+await fetch("/api/manage-keys",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+action:"buy",
+discordId:currentUserId,
+amount:p.hours
+})
+})
+
+updateStatus()
+
+}
+
+}).render(`#${p.id}`)
+
+})
 
 }
 
@@ -256,8 +345,6 @@ expiryTimestamp=data.expiry
 async function uploadKeys(){
 
 const text=document.getElementById("admin-keys").value.trim()
-
-if(!text)return
 
 const keys=text.split("\n").map(k=>k.trim()).filter(Boolean)
 
@@ -271,7 +358,7 @@ keys
 })
 })
 
-alert("Keys uploaded")
+alert("keys uploaded")
 
 }
 
@@ -303,7 +390,7 @@ handleCallback()
 
 startTimer()
 
-setInterval(updateStatus,10000)
+setInterval(updateStatus,8000)
 
 }
 
@@ -311,6 +398,8 @@ setInterval(updateStatus,10000)
 
 </body>
 </html>
+
+
 
 
 
