@@ -17,37 +17,49 @@
 
   <style>
     :root {
-      --primary: #10b981;
-      --primary-focus: #059669;
-      --dark: #0f172a;
-      --darker: #020617;
+      --bg: #0a0e17;
+      --card: #111827;
+      --text: #e2e8f0;
+      --text-dim: #94a3b8;
+      --accent: #10b981;
+      --accent-dark: #059669;
     }
     body {
-      background: linear-gradient(to bottom, var(--dark), var(--darker));
-      color: white;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
     }
-    .glow { box-shadow: 0 0 25px rgba(16, 185, 129, 0.4); }
-    .glow-sm { box-shadow: 0 0 15px rgba(16, 185, 129, 0.25); }
-    .neon-text { text-shadow: 0 0 10px #10b981, 0 0 20px #10b981; }
-    .slot-active {
-      background: linear-gradient(135deg, #10b98133, #05966933);
-      border-color: #10b981;
+    .glow {
+      box-shadow: 0 0 25px rgba(16, 185, 129, 0.25);
+    }
+    .glow-sm {
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+    }
+    .neon-text {
+      text-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent);
+    }
+    .slot-occupied {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: var(--accent);
+    }
+    .slot-free {
+      background: rgba(30, 41, 59, 0.5);
+      border-color: #334155;
     }
   </style>
 </head>
 <body class="antialiased">
 
   <!-- Navbar -->
-  <nav class="fixed top-0 left-0 right-0 z-50 bg-black/70 backdrop-blur-lg border-b border-white/10">
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-lg border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-2xl font-black shadow-lg shadow-emerald-900/50">
+        <div class="w-10 h-10 rounded-xl bg-emerald-700 flex items-center justify-center text-2xl font-black shadow-lg shadow-emerald-900/50">
           T
         </div>
         <h1 class="text-2xl font-bold tracking-tight neon-text">TRULY'S AUTOJOINER</h1>
       </div>
-      <button onclick="discordLogin()" class="btn btn-primary gap-2 shadow-lg shadow-emerald-900/40">
+      <button onclick="discordLogin()" class="btn bg-emerald-600 hover:bg-emerald-700 border-none text-white gap-2 shadow-lg shadow-emerald-900/40">
         <i class="fab fa-discord text-xl"></i>
         Login with Discord
       </button>
@@ -55,82 +67,132 @@
   </nav>
 
   <!-- Main Content -->
-  <main class="pt-28 pb-20 px-6 max-w-5xl mx-auto">
+  <main class="pt-28 pb-20 px-6 max-w-6xl mx-auto">
 
     <!-- Landing -->
-    <div id="landing" class="text-center py-20">
+    <div id="landing" class="text-center py-24">
       <h2 class="text-5xl md:text-7xl font-black tracking-tight neon-text mb-6">
         Roblox Auto Joiner
       </h2>
-      <p class="text-xl md:text-2xl text-gray-300 mb-10 max-w-3xl mx-auto">
-        Private, fast, undetectable server joins.<br/>
-        <span class="text-emerald-400 font-semibold">4 € = 1 hour</span> – keys activate automatically one after another
+      <p class="text-xl md:text-2xl text-slate-300 mb-10 max-w-3xl mx-auto">
+        Fast private server joins • Max 6 users at once<br/>
+        <span class="text-emerald-400 font-semibold">4 € = 1 hour</span> – keys queue automatically
       </p>
-      <button onclick="discordLogin()" class="btn btn-primary btn-lg gap-3 shadow-xl shadow-emerald-900/50 text-lg">
-        <i class="fab fa-discord text-2xl"></i> Start with Discord
+      <button onclick="discordLogin()" class="btn btn-lg bg-emerald-600 hover:bg-emerald-700 text-white gap-3 shadow-xl shadow-emerald-900/50">
+        <i class="fab fa-discord text-2xl"></i> Login with Discord
       </button>
     </div>
 
     <!-- Dashboard -->
     <div id="dashboard" class="hidden space-y-12">
+
+      <!-- Welcome -->
       <div class="text-center">
         <h2 class="text-4xl font-bold mb-3">
           Welcome back, <span id="username" class="text-emerald-400">@...</span>
         </h2>
       </div>
 
-      <!-- Current Slot -->
-      <div class="card bg-base-200 shadow-2xl glow">
-        <div class="card-body items-center text-center">
-          <h3 class="card-title text-3xl mb-4">Your Active Slot</h3>
-          <div class="text-6xl font-black mb-2" id="time-left">00:00:00</div>
-          <div class="text-xl text-gray-400 mb-6">remaining</div>
-          <div class="badge badge-lg badge-success gap-2 px-6 py-4 text-lg">
-            <i class="fas fa-key"></i> Key active
+      <!-- 6 Slots Grid -->
+      <div class="card bg-slate-900/60 border border-slate-700 shadow-2xl">
+        <div class="card-body">
+          <h3 class="card-title text-2xl mb-6 text-center">Live Slots (6 max)</h3>
+          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div id="slot-1" class="slot-free rounded-xl p-4 text-center border border-slate-600">
+              <div class="text-sm text-slate-400 mb-1">Slot 1</div>
+              <div class="text-lg font-bold">Free</div>
+            </div>
+            <div id="slot-2" class="slot-free rounded-xl p-4 text-center border border-slate-600">
+              <div class="text-sm text-slate-400 mb-1">Slot 2</div>
+              <div class="text-lg font-bold">Free</div>
+            </div>
+            <div id="slot-3" class="slot-free rounded-xl p-4 text-center border border-slate-600">
+              <div class="text-sm text-slate-400 mb-1">Slot 3</div>
+              <div class="text-lg font-bold">Free</div>
+            </div>
+            <div id="slot-4" class="slot-free rounded-xl p-4 text-center border border-slate-600">
+              <div class="text-sm text-slate-400 mb-1">Slot 4</div>
+              <div class="text-lg font-bold">Free</div>
+            </div>
+            <div id="slot-5" class="slot-free rounded-xl p-4 text-center border border-slate-600">
+              <div class="text-sm text-slate-400 mb-1">Slot 5</div>
+              <div class="text-lg font-bold">Free</div>
+            </div>
+            <div id="slot-6" class="slot-free rounded-xl p-4 text-center border border-slate-600">
+              <div class="text-sm text-slate-400 mb-1">Slot 6</div>
+              <div class="text-lg font-bold">Free</div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Queued Keys -->
-      <div class="card bg-base-200 shadow-2xl">
+      <!-- Your Status -->
+      <div class="card bg-slate-900/60 border border-slate-700 shadow-2xl">
         <div class="card-body">
-          <h3 class="card-title text-2xl mb-4 flex items-center gap-3">
-            <i class="fas fa-clock text-yellow-400"></i>
-            Your Queued Keys
-          </h3>
-          <div id="queued-keys" class="space-y-3 text-lg">
-            <div class="alert alert-info">
-              <span>No queued keys yet. Buy more to queue them.</span>
+          <h3 class="card-title text-2xl mb-6">Your Slot & Time</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="text-center">
+              <div class="text-5xl font-black mb-2" id="time-left">00:00:00</div>
+              <div class="text-lg text-slate-300">remaining on active key</div>
+            </div>
+            <div>
+              <h4 class="text-xl font-semibold mb-3">Queued Keys</h4>
+              <div id="queued-keys" class="space-y-2">
+                <div class="alert alert-info bg-slate-800/50 border-slate-600">
+                  No queued keys yet
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Buy Keys -->
-      <div class="card bg-base-200 shadow-2xl">
+      <div class="card bg-slate-900/60 border border-slate-700 shadow-2xl">
         <div class="card-body">
           <h3 class="card-title text-3xl mb-6 text-center">Buy More Time</h3>
-          <p class="text-center text-gray-400 mb-8">4 € = 1 hour – added to queue automatically</p>
+          <p class="text-center text-slate-400 mb-8">4 € = 1 hour – added to your queue</p>
+
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all">
+            <div class="card bg-slate-800/70 shadow-xl hover:shadow-2xl transition-all border border-slate-600">
               <div class="card-body items-center text-center">
                 <div class="text-3xl font-bold mb-2">1 Hour</div>
                 <div class="text-5xl font-black text-emerald-400 mb-6">4 €</div>
                 <div id="paypal-1" class="w-full min-h-[140px] flex items-center justify-center"></div>
               </div>
             </div>
-            <!-- Add more packs as needed -->
+            <div class="card bg-slate-800/70 shadow-xl hover:shadow-2xl transition-all border border-slate-600">
+              <div class="card-body items-center text-center">
+                <div class="text-3xl font-bold mb-2">3 Hours</div>
+                <div class="text-5xl font-black text-emerald-400 mb-6">12 €</div>
+                <div id="paypal-3" class="w-full min-h-[140px] flex items-center justify-center"></div>
+              </div>
+            </div>
+            <div class="card bg-slate-800/70 shadow-xl hover:shadow-2xl transition-all border border-slate-600">
+              <div class="card-body items-center text-center">
+                <div class="text-3xl font-bold mb-2">10 Hours</div>
+                <div class="text-5xl font-black text-emerald-400 mb-6">40 €</div>
+                <div id="paypal-10" class="w-full min-h-[140px] flex items-center justify-center"></div>
+              </div>
+            </div>
+            <div class="card bg-slate-800/70 shadow-xl hover:shadow-2xl transition-all border border-slate-600">
+              <div class="card-body items-center text-center">
+                <div class="text-3xl font-bold mb-2">25 Hours</div>
+                <div class="text-5xl font-black text-emerald-400 mb-6">100 €</div>
+                <div id="paypal-25" class="w-full min-h-[140px] flex items-center justify-center"></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Admin Panel -->
-      <div id="admin-panel" class="hidden card bg-red-950/40 border border-red-600/50 shadow-2xl">
+      <div id="admin-panel" class="hidden card bg-red-950/40 border border-red-700/50 shadow-2xl">
         <div class="card-body">
           <h3 class="card-title text-3xl text-red-400 mb-6">Admin – Upload Keys</h3>
           <textarea id="admin-keys" class="textarea textarea-bordered textarea-lg w-full h-40 font-mono bg-black/60 text-white" placeholder="Paste keys here – one per line"></textarea>
           <button onclick="uploadKeys()" class="btn btn-error btn-lg w-full mt-4">
-            <i class="fas fa-upload mr-2"></i> Upload Keys to Pool
+            <i class="fas fa-upload mr-2"></i> Upload Keys
           </button>
         </div>
       </div>
@@ -140,127 +202,82 @@
   <script>
     // CONFIG
     const CLIENT_ID = "1477548522713911448";
-    const REDIRECT_URI = "https://stuff-2eft.onrender.com/"; // NO trailing slash!
+    const REDIRECT_URI = "https://stuff-2eft.onrender.com/"; // CHANGE TO YOUR REAL URL (NO TRAILING SLASH!)
     const ADMIN_ID = "1049068212182073344";
 
     let currentUserId = null;
-    let pkceCodeVerifier = null;
 
-    // PKCE helpers
-    function base64URLEncode(str) {
-      return btoa(str)
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=/g, '');
+    // Login
+    function discordLogin() {
+      const state = Math.random().toString(36).substring(2);
+      localStorage.setItem("dc_state", state);
+
+      const params = new URLSearchParams({
+        client_id: CLIENT_ID,
+        redirect_uri: REDIRECT_URI,
+        response_type: "token",
+        scope: "identify",
+        state: state
+      });
+
+      window.location.href = `https://discord.com/oauth2/authorize?${params}`;
     }
 
-    async function sha256(plain) {
-      const encoder = new TextEncoder();
-      const data = encoder.encode(plain);
-      const hash = await crypto.subtle.digest('SHA-256', data);
-      return String.fromCharCode.apply(null, new Uint8Array(hash));
-    }
+    function handleDiscordCallback() {
+      const hash = window.location.hash.substring(1);
+      if (!hash) return;
 
-    // Login with PKCE
-    async function discordLogin() {
-      try {
-        pkceCodeVerifier = base64URLEncode(crypto.getRandomValues(new Uint8Array(32)).join(''));
-        const codeChallenge = base64URLEncode(await sha256(pkceCodeVerifier));
-
-        const state = Math.random().toString(36).substring(2);
-        localStorage.setItem("dc_state", state);
-        localStorage.setItem("pkce_verifier", pkceCodeVerifier);
-
-        const params = new URLSearchParams({
-          client_id: CLIENT_ID,
-          redirect_uri: REDIRECT_URI,
-          response_type: "code",
-          scope: "identify",
-          state: state,
-          code_challenge: codeChallenge,
-          code_challenge_method: "S256"
-        });
-
-        window.location.href = `https://discord.com/oauth2/authorize?${params}`;
-      } catch (err) {
-        console.error("Login error:", err);
-        alert("Failed to start login: " + err.message);
-      }
-    }
-
-    // Handle redirect back
-    async function handleDiscordCallback() {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get("code");
+      const params = new URLSearchParams(hash);
+      const token = params.get("access_token");
       const state = params.get("state");
 
-      if (!code || state !== localStorage.getItem("dc_state")) {
-        console.log("No code or state mismatch");
-        return;
-      }
+      if (token && state === localStorage.getItem("dc_state")) {
+        fetch("https://discord.com/api/users/@me", {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        .then(r => r.json())
+        .then(user => {
+          currentUserId = user.id;
+          document.getElementById("username").textContent = user.username;
+          document.getElementById("landing").classList.add("hidden");
+          document.getElementById("dashboard").classList.remove("hidden");
 
-      pkceCodeVerifier = localStorage.getItem("pkce_verifier");
+          if (user.id === ADMIN_ID) {
+            document.getElementById("admin-panel").classList.remove("hidden");
+          }
 
-      try {
-        const tokenRes = await fetch("https://discord.com/api/oauth2/token", {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({
-            client_id: CLIENT_ID,
-            grant_type: "authorization_code",
-            code,
-            redirect_uri: REDIRECT_URI,
-            code_verifier: pkceCodeVerifier
-          })
+          updateSlotStatus();
+          window.history.replaceState({}, "", window.location.pathname);
+        })
+        .catch(err => {
+          console.error(err);
+          alert("Login failed. Please try again or check your redirect URI in Discord developer portal.");
         });
-
-        if (!tokenRes.ok) {
-          const err = await tokenRes.json();
-          throw new Error(err.error_description || "Token exchange failed");
-        }
-
-        const tokenData = await tokenRes.json();
-
-        const userRes = await fetch("https://discord.com/api/users/@me", {
-          headers: { Authorization: `Bearer ${tokenData.access_token}` }
-        });
-
-        if (!userRes.ok) throw new Error("Failed to fetch user");
-
-        const user = await userRes.json();
-
-        currentUserId = user.id;
-        document.getElementById("username").textContent = user.username;
-        document.getElementById("landing").classList.add("hidden");
-        document.getElementById("dashboard").classList.remove("hidden");
-
-        if (user.id === ADMIN_ID) {
-          document.getElementById("admin-panel").classList.remove("hidden");
-        }
-
-        updateSlotStatus();
-        window.history.replaceState({}, "", window.location.pathname);
-      } catch (err) {
-        console.error("Login failed:", err);
-        alert("Login failed: " + err.message);
       }
     }
 
-    // Placeholder for slot status (update with your real backend)
+    // Slot & key status (update this with your real backend call)
     async function updateSlotStatus() {
-      document.getElementById("time-left").textContent = "00:00:00";
-      // Add real fetch to /api/manage-keys here when backend is ready
+      // Placeholder - replace with real fetch to your /api endpoint
+      document.getElementById("time-left").textContent = "00:15:42";
+
+      // Example: show some occupied slots
+      document.getElementById("slot-1").classList.add("slot-occupied");
+      document.getElementById("slot-1").innerHTML = `<div class="text-sm text-slate-400 mb-1">Slot 1</div><div class="font-bold">User123</div><div class="text-xs text-emerald-400">12 min left</div>`;
+
+      document.getElementById("slot-4").classList.add("slot-occupied");
+      document.getElementById("slot-4").innerHTML = `<div class="text-sm text-slate-400 mb-1">Slot 4</div><div class="font-bold">GamerX</div><div class="text-xs text-emerald-400">38 min left</div>`;
     }
 
     // Admin upload (placeholder)
-    async function uploadKeys() {
-      alert("Admin upload would go here (connect to backend)");
+    function uploadKeys() {
+      alert("Admin key upload - connect this to your backend");
     }
 
-    // PayPal init (placeholder - add your packs)
+    // PayPal (basic init - add your logic)
     function initPaypal() {
-      // Add your PayPal button rendering logic here
-      console.log("PayPal initialized");
+      console.log("PayPal ready");
+      // Add real PayPal button rendering here
     }
 
     // Init
@@ -271,4 +288,3 @@
   </script>
 </body>
 </html>
-
