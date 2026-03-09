@@ -182,20 +182,20 @@
     let currentUserId = null;
 
     // ===================== DISCORD LOGIN =====================
-    function discordLogin() {
-      const state = Math.random().toString(36).substring(2);
-      localStorage.setItem("dc_state", state);
+   function discordLogin() {
+  const state = Math.random().toString(36).substring(2);
+  localStorage.setItem("discord_state", state);
 
-      const params = new URLSearchParams({
-        client_id: CLIENT_ID,
-        redirect_uri: encodeURIComponent(REDIRECT_URI),
-        response_type: "token",
-        scope: "identify",
-        state
-      });
+  const params = new URLSearchParams({
+    client_id: CLIENT_ID,
+    redirect_uri: "https://stuff-2eft.onrender.com",  // ← your exact Render URL here
+    response_type: "token",
+    scope: "identify",
+    state: state
+  });
 
-      window.location = "https://discord.com/oauth2/authorize?" + params;
-    }
+  window.location.href = `https://discord.com/oauth2/authorize?${params.toString()}`;
+}
 
     function handleDiscordCallback() {
       const hash = window.location.hash.substring(1);
@@ -346,4 +346,5 @@
   </script>
 </body>
 </html>
+
 
