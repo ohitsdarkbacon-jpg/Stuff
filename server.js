@@ -34,11 +34,15 @@ return res.json({added:keys.length})
 
 }
 
-if(action==="give-self"){
+if(action==="buy" || action==="give-self"){
 
-if(!isAdmin)return res.status(403).json({error:"admin only"})
+if(action==="give-self" && !isAdmin){
+return res.status(403).json({error:"admin only"})
+}
 
-if(keyPool.length<amount)return res.json({error:"not enough keys"})
+if(keyPool.length<amount){
+return res.json({error:"not enough keys"})
+}
 
 let user=activeSlots.find(s=>s.discordId===discordId)
 
@@ -67,13 +71,13 @@ expiry:Date.now()+HOUR,
 queue:newKeys
 })
 
-return res.json({activated:true})
-
-}
+}else{
 
 user.queue.push(...newKeys)
 
-return res.json({queued:user.queue.length})
+}
+
+return res.json({success:true})
 
 }
 
@@ -81,23 +85,21 @@ if(action==="status"){
 
 const slot=activeSlots.find(s=>s.discordId===discordId)
 
-const timeLeft=slot?Math.max(0,slot.expiry-Date.now()):0
-
 const queueIndex=waitingQueue.findIndex(q=>q.discordId===discordId)
 
 return res.json({
 
 activeKey:slot?.currentKey||null,
-
 queuedHours:slot?.queue.length||0,
-
 expiry:slot?.expiry||0,
-
 queuePosition:queueIndex>=0?queueIndex+1:null,
-
 queueLength:waitingQueue.length,
+activeCount:activeSlots.length,
 
-activeCount:activeSlots.length
+activeUsers:activeSlots.map(s=>({
+name:s.discordId,
+expiry:s.expiry
+}))
 
 })
 
@@ -122,9 +124,11 @@ return true
 }
 
 return false
+
 }
 
 return true
+
 })
 
 while(activeSlots.length<MAX_SLOTS && waitingQueue.length>0 && keyPool.length>0){
@@ -145,5 +149,4 @@ queue:[]
 },10000)
 
 app.listen(3000,()=>console.log("server running"))
-
 
