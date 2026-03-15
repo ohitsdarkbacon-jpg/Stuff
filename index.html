@@ -41,7 +41,7 @@ body{background:#0a0e17;color:#e2e8f0}
 
 <p class="text-xl text-slate-300 mb-12">
 Private Roblox server joining<br>
-4 € = 1 hour
+€0.50 = 2 hours
 </p>
 
 <button onclick="discordLogin()" class="btn btn-lg bg-emerald-600 text-white gap-3">
@@ -115,23 +115,23 @@ Active Key: <span id="active-key">None</span>
 <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
 
 <div>
-<div class="text-center mb-2 font-bold">1 Hour</div>
-<div id="paypal1"></div>
+<div class="text-center mb-2 font-bold">2 Hours</div>
+<div id="paypal2"></div>
 </div>
 
 <div>
-<div class="text-center mb-2 font-bold">3 Hours</div>
-<div id="paypal3"></div>
+<div class="text-center mb-2 font-bold">6 Hours</div>
+<div id="paypal6"></div>
 </div>
 
 <div>
-<div class="text-center mb-2 font-bold">10 Hours</div>
-<div id="paypal10"></div>
+<div class="text-center mb-2 font-bold">20 Hours</div>
+<div id="paypal20"></div>
 </div>
 
 <div>
-<div class="text-center mb-2 font-bold">25 Hours</div>
-<div id="paypal25"></div>
+<div class="text-center mb-2 font-bold">50 Hours</div>
+<div id="paypal50"></div>
 </div>
 
 </div>
@@ -302,10 +302,10 @@ list.appendChild(el)
 function initPaypal(){
 
 const packs=[
-{id:"paypal1",price:"4",hours:1},
-{id:"paypal3",price:"12",hours:3},
-{id:"paypal10",price:"40",hours:10},
-{id:"paypal25",price:"100",hours:25}
+{id:"paypal2",price:"0.50",hours:2},
+{id:"paypal6",price:"1.50",hours:6},
+{id:"paypal20",price:"5.00",hours:20},
+{id:"paypal50",price:"12.50",hours:50}
 ]
 
 packs.forEach(p=>{
@@ -331,7 +331,6 @@ amount:p.hours
 })
 
 updateStatus()
-
 }
 
 }).render(`#${p.id}`)
@@ -398,7 +397,6 @@ setInterval(updateStatus,8000)
 
 </body>
 </html>
-
 
 
 
